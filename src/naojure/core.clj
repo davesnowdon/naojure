@@ -71,6 +71,46 @@
   [val]
   (new com.aldebaran.proxy.Variant val))
 
+(defn get-installed-behaviours
+  "Return list of behaviours installed on robot"
+  [robot]
+  (.getInstalledBehaviors (get-proxy robot :behaviour-manager)))
+
+(defn get-running-behaviours
+  "Get list of running behaviours"
+  [robot]
+  (.getRunningBehaviors (get-proxy robot :behaviour-manager)))
+
+(defn get-default-behaviours
+  "Get list of default behaviours (behaviours set to run automatically)"
+  [robot]
+  (.getDefaultBehaviors (get-proxy robot :behaviour-manager)))
+
+(defn add-default-behaviour
+  "Make the named behaviour auto run on robot boot"
+  [robot behaviour-name]
+  (.addDefaultBehavior (get-proxy robot :behaviour-manager) behaviour-name))
+
+(defn remove-default-behaviour
+  "Stop the named behaviour auto running on robot boot"
+  [robot behaviour-name]
+  (.removeDefaultBehavior (get-proxy robot :behaviour-manager) behaviour-name))
+
+(defn run-behaviour
+  "Run the named behaviour"
+  [robot behaviour-name]
+  (.runBehavior (get-proxy robot :behaviour-manager) behaviour-name))
+
+(defn behaviour-present
+  "Is the named behaviour present?"
+  [robot behaviour-name]
+  (.isBehaviorPresent (get-proxy robot :behaviour-manager) behaviour-name))
+
+(defn behaviour-running
+  "Is the named behaviour running"
+  [robot behaviour-name]
+  (.isBehaviorRunning (get-proxy robot :behaviour-manager) behaviour-name))
+
 (defn get-joint-angles
   "Return a map of the current joint angles for a robot"
   [robot]

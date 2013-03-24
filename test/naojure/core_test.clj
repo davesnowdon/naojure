@@ -1,6 +1,6 @@
 (ns naojure.core-test
   (:use clojure.test
-        foo.core))
+        naojure.core))
 
 (deftest a-test
   (testing "FIXME, I fail."
