@@ -71,6 +71,7 @@
   [val]
   (new com.aldebaran.proxy.Variant val))
 
+; behaviour management
 (defn get-installed-behaviours
   "Return list of behaviours installed on robot"
   [robot]
@@ -111,6 +112,32 @@
   [robot behaviour-name]
   (.isBehaviorRunning (get-proxy robot :behaviour-manager) behaviour-name))
 
+; memory
+(defn get-memory-keys
+  "List memory keys"
+  [robot]
+  (.getDataListName (get-proxy robot :memory)))
+
+(defn get-memory-keys-containing
+  "List memory keys containing string value"
+  [robot val]
+  (.getDataList (get-proxy robot :memory) val))
+
+;; TODO need a way to unpack the Variant
+;; currently get the following error when trying to extract values from the result
+;; ClassNotFoundException com.aldebaran.proxy.Variant$typeV  java.net.URLClassLoader$1.run (URLClassLoader.java:366)
+(defn get-memory-value
+  "Get named value from memory"
+  [robot key]
+  (.getData (get-proxy robot :memory) key))
+
+(defn get-memory-values
+  "Get values for list of named keys"
+  [robot keys]
+  (.getData (get-proxy robot :memory)
+            (make-variant (to-array keys))))
+
+; motion
 (defn get-joint-angles
   "Return a map of the current joint angles for a robot"
   [robot]
@@ -133,6 +160,7 @@
   [robot]
   (.getSensorNames (get-proxy robot :motion)))
 
+; text to speech
 (defn say
   "Say something"
   [robot text]
