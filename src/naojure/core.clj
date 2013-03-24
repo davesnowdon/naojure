@@ -30,6 +30,15 @@
                    "RShoulderPitch", "RShoulderRoll", "RElbowYaw", "RElbowRoll", 
                    "RWristYaw", "RHand"))
 
+(def postures {:crouch "Crouch"
+               :lying-back "LyingBack"
+               :lying-belly "LyingBelly"
+               :sit "Sit"
+               :sit-relax "SitRelax"
+               :stand "Stand"
+               :stand-init "StandInit"
+               :stand-zero "StandZero"})
+
 (def FRAME_TORSO 0)
 (def FRAME_WORLD 1)
 (def FRAME_ROBOT 2)
@@ -137,7 +146,79 @@
   (.getData (get-proxy robot :memory)
             (make-variant (to-array keys))))
 
+; posture
+(defn go-to-posture
+  "Move to the specified posture (use symbol). relative-speed is between zero and one"
+  [robot posture relative-speed]
+  (.goToPosture (get-proxy robot :posture) (postures posture) relative-speed))
+
+(defn crouch
+  "Crouch"
+  ([robot]
+     (go-to-posture robot :crouch 1.0))
+  ([robot speed]
+     (go-to-posture robot :crouch speed)))
+
+(defn lie-on-back
+  "Lie on back"
+  ([robot]
+     (go-to-posture robot :lying-back 1.0))
+  ([robot speed]
+     (go-to-posture robot :lying-back speed)))
+
+(defn lie-on-belly
+  "Lie on belly"
+  ([robot]
+     (go-to-posture robot :lying-belly 1.0))
+  ([robot speed]
+     (go-to-posture robot :lying-belly speed)))
+
+(defn sit
+  "Sit"
+  ([robot]
+     (go-to-posture robot :sit 1.0))
+  ([robot speed]
+     (go-to-posture robot :sit speed)))
+
+(defn sit-relaxed
+  "Relaxed sit"
+  ([robot]
+     (go-to-posture robot :sit-relax 1.0))
+  ([robot speed]
+     (go-to-posture robot :sit-relax speed)))
+
+(defn stand
+  "Stand up"
+  ([robot]
+     (go-to-posture robot :stand 1.0))
+  ([robot speed]
+     (go-to-posture robot :stand speed)))
+
+(defn stand-init
+  "Stand up (init)"
+  ([robot]
+     (go-to-posture robot :stand-init 1.0))
+  ([robot speed]
+     (go-to-posture robot :stand-init speed)))
+
+(defn stand-zero
+  "Stand up (zero)"
+  ([robot]
+     (go-to-posture robot :stand-zero 1.0))
+  ([robot speed]
+     (go-to-posture robot :stand-zero speed)))
+
 ; motion
+(defn wake-up
+  "The robot wakes up: sets Motor on and, if needed, goes to initial position. For example, H25 or H21 sets the Stiffness on and keeps is current position."
+  [robot]
+  (.wakeUp (get-proxy robot :motion)))
+
+(defn relax
+  "The robot rests: goes to a relax and safe position and sets Motor off. For example, H25 or H21 goes to the Crouch posture and sets the Stiffness off."
+  [robot]
+  (.rest (get-proxy robot :motion)))
+
 (defn get-joint-angles
   "Return a map of the current joint angles for a robot"
   [robot]
