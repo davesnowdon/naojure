@@ -28,7 +28,7 @@ dependencies and depoy both jars to the project's local repository.
 
 <pre lang="shell"><code>
 #! /bin/bash
-REPO=<PATH TO YOUR PROJECT HERE>/maven_repository
+REPO=*PATH TO YOUR PROJECT HERE>*/maven_repository
 
 jar -cMf jnaoqi-native-deps-1.14.0.jar native
 
