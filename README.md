@@ -6,16 +6,17 @@ controlled from clojure and REPL-based experimentation
 ## using the library
 The first thing is to make a robot
 
-<pre lang="clojure"><code>
+<pre>
 (def robot (make-robot "IP-ADDRESS-OR-HOSTNAME" 9559))
-</code></pre>
+</pre>
 
 This creates a map containing information about the robot. You can also
-request that various proxies are created and added to the map also:
+request that various proxies are created and added to the map also.
 
-<pre lang="clojure"><code>
+<pre>
 (def robot (make-robot "IP-ADDRESS-OR-HOSTNAME" 9559 :motion :memory :tts))
-</code></pre>
+</pre>
+
 
 proxy-classes contains the full list of available symbols to create
 proxies. Most functions create proxies on-the-fly if the robot map does not
@@ -25,14 +26,15 @@ more than once.
 
 Once you have a robot you can then do actions such as:
 
-<pre lang="clojure"><code>
+<pre>
 (say robot "Hello world")
 (wake-up robot)
 (walk robot 1.0 0 0)
 (get-joint-angles robot)
 (sit-relaxed robot)
 (relax robot)
-</code></pre>
+</pre>
+
 
 ## Packaging the Aldebaran library
 In order to get leiningen to load native dependencies you can pack them
