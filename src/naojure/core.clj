@@ -63,7 +63,7 @@
                                  proxy-list))))
 
 (defn make-robot
-  "Constructs a map representing a robot including any requested proxies"
+  "Constructs a map representing a robot including any requested proxies. Most functions will construct the proxies they need on-the-fly if they are not already defined but since these are not stored it is more efficient to ask for any needed proxies in the call to make-robot."
   ([hostname] {:hostname hostname :port 9559})
   ([hostname port] {:hostname hostname :port port})
   ([hostname port proxies]
@@ -219,12 +219,42 @@
   [robot]
   (.rest (get-proxy robot :motion)))
 
+(defn walk
+  "Walk at the specified speed. x, y, & theta represent normalised velocities from 0.0 to 1.0"
+  [robot x y theta]
+  (.moveToward (get-proxy robot :motion) x y theta))
+
+(defn walk-to
+  "Walk to a specified location in the robot's frame of reference"
+  [robot x y theta]
+  (.moveTo (get-proxy robot :motion) x y theta))
+
 (defn get-joint-angles
   "Return a map of the current joint angles for a robot"
   [robot]
   (zipmap joint-names
           (.getAngles (get-proxy robot :motion)
                       (make-variant "Body") true)))
+(defn get-body-names
+  "Return names of joints in the specified chain"
+  [robot name]
+  (.getBodyNames (get-proxy robot :motion) name))
+
+;; broken - can't construct variant holding array of values 
+(defn set-joint-angles
+  "Set the named joints to absolute changes"
+  [robot names angles speed]
+  (.setAngles (get-proxy robot :motion)
+              (to-array names)
+              (to-array angles) speed))
+
+;; broken - can't construct variant holding array of values 
+(defn change-joint-angles
+  "Relative changes to joint angles"
+  [robot names changes speed]
+    (.changeAngles (get-proxy robot :motion)
+                   (to-array names)
+                   (to-array changes) speed))
 
 (defn get-robot-position
   "Get the current position of the robot using the sensors if true"
