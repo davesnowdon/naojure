@@ -3,6 +3,37 @@
 Clojure wrapper for Aldebaran Robotics java API. Allows a NAO robot to be
 controlled from clojure and REPL-based experimentation
 
+## using the library
+The first thing is to make a robot
+
+<pre lang="clojure"><code>
+(def robot (make-robot "IP-ADDRESS-OR-HOSTNAME" 9559))
+</code></pre>
+
+This creates a map containing information about the robot. You can also
+request that various proxies are created and added to the map also:
+
+<pre lang="clojure"><code>
+(def robot (make-robot "IP-ADDRESS-OR-HOSTNAME" 9559 :motion :memory :tts))
+</code></pre>
+
+proxy-classes contains the full list of available symbols to create
+proxies. Most functions create proxies on-the-fly if the robot map does not
+have the necessary proxy, however since these are not stored it's more
+efficient to create proxies up-front for any proxies you know you'll use
+more than once.
+
+Once you have a robot you can then do actions such as:
+
+<pre lang="clojure"><code>
+(say robot "Hello world")
+(wake-up robot)
+(walk robot 1.0 0 0)
+(get-joint-angles robot)
+(sit-relaxed robot)
+(relax robot)
+</code></pre>
+
 ## Packaging the Aldebaran library
 In order to get leiningen to load native dependencies you can pack them
 into a jar file and install them in a local repository. I create a
