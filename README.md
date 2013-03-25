@@ -52,8 +52,8 @@ native/macosx/
 native/macosx/x86_64/
 native/macosx/x86_64/libjnaoqi.jnilib
 native/windows/
-native/windows/x86_64/
-native/windows/x86_64/jnaoqi.dll
+native/windows/x86/
+native/windows/x86/jnaoqi.dll
 </pre>
 
 I then run the following script to create a jar file containing the native
