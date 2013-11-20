@@ -6,7 +6,7 @@
                     :battery "com.aldebaran.proxy.ALBatteryProxy"
                     :behaviour-manager "com.aldebaran.proxy.ALBehaviorManagerProxy"
                     :darkness-detection "com.aldebaran.proxy.ALDarknessDetectionProxy"
-                    :leds "com.aldebaran.proxy.ALLedsProxy" 
+                    :leds "com.aldebaran.proxy.ALLedsProxy"
                     :memory "com.aldebaran.proxy.ALMemoryProxy"
                     :motion "com.aldebaran.proxy.ALMotionProxy"
                     :navigation "com.aldebaran.proxy.ALNavigationProxy"
@@ -20,14 +20,14 @@
                     :tts "com.aldebaran.proxy.ALTextToSpeechProxy"
                     })
 
-(def joint-names '("HeadYaw", "HeadPitch", 
-                   "LShoulderPitch", "LShoulderRoll", "LElbowYaw", "LElbowRoll", 
+(def joint-names '("HeadYaw", "HeadPitch",
+                   "LShoulderPitch", "LShoulderRoll", "LElbowYaw", "LElbowRoll",
                    "LWristYaw", "LHand",
-                   "LHipYawPitch", "LHipRoll", "LHipPitch", 
+                   "LHipYawPitch", "LHipRoll", "LHipPitch",
                    "LKneePitch", "LAnklePitch", "LAnkleRoll",
-                   "RHipYawPitch", "RHipRoll", "RHipPitch", 
+                   "RHipYawPitch", "RHipRoll", "RHipPitch",
                    "RKneePitch",  "RAnklePitch", "RAnkleRoll",
-                   "RShoulderPitch", "RShoulderRoll", "RElbowYaw", "RElbowRoll", 
+                   "RShoulderPitch", "RShoulderRoll", "RElbowYaw", "RElbowRoll",
                    "RWristYaw", "RHand"))
 
 (def postures {:crouch "Crouch"
@@ -65,9 +65,22 @@
 (defn make-robot
   "Constructs a map representing a robot including any requested proxies. Most functions will construct the proxies they need on-the-fly if they are not already defined but since these are not stored it is more efficient to ask for any needed proxies in the call to make-robot."
   ([hostname] {:hostname hostname :port 9559})
-  ([hostname port] {:hostname hostname :port port})
+  ([hostname port] ( {:hostname hostname :port port}))
   ([hostname port proxies]
      (add-proxies {:hostname hostname :port port} proxies)))
+
+(defn make-application
+  "Creates an instance of an application object"
+  []
+  (com.aldebaran.qimessaging.Application.))
+
+(defn make-session
+  "Create a session connected to a robot"
+  [hostname port]
+  (let [session (com.aldebaran.qimessaging.Session.)
+        fut (.connect session (str "tcp://" hostname ":" port))]
+        (.wait fut 1000)
+        session))
 
 (defn get-proxy
   "Gets a proxy from a robot, constructing it if necessary"
@@ -240,7 +253,7 @@
   [robot name]
   (.getBodyNames (get-proxy robot :motion) name))
 
-;; broken - can't construct variant holding array of values 
+;; broken - can't construct variant holding array of values
 (defn set-joint-angles
   "Set the named joints to absolute changes"
   [robot names angles speed]
@@ -248,7 +261,7 @@
               (to-array names)
               (to-array angles) speed))
 
-;; broken - can't construct variant holding array of values 
+;; broken - can't construct variant holding array of values
 (defn change-joint-angles
   "Relative changes to joint angles"
   [robot names changes speed]
