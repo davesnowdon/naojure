@@ -88,10 +88,10 @@
   (let [p (proxy robot)]
     (if (nil? p) (make-proxy robot proxy) p)))
 
-(defn make-variant
-  "Make instance of Aldebaran ALValue (Variant in java)"
-  [val]
-  (new com.aldebaran.proxy.Variant val))
+;; (defn make-variant
+;;   "Make instance of Aldebaran ALValue (Variant in java)"
+;;   [val]
+;;   (new com.aldebaran.proxy.Variant val))
 
 ; behaviour management
 (defn get-installed-behaviours
@@ -148,16 +148,16 @@
 ;; TODO need a way to unpack the Variant
 ;; currently get the following error when trying to extract values from the result
 ;; ClassNotFoundException com.aldebaran.proxy.Variant$typeV  java.net.URLClassLoader$1.run (URLClassLoader.java:366)
-(defn get-memory-value
-  "Get named value from memory"
-  [robot key]
-  (.getData (get-proxy robot :memory) key))
+;; (defn get-memory-value
+;;   "Get named value from memory"
+;;   [robot key]
+;;   (.getData (get-proxy robot :memory) key))
 
-(defn get-memory-values
-  "Get values for list of named keys"
-  [robot keys]
-  (.getData (get-proxy robot :memory)
-            (make-variant (to-array keys))))
+;; (defn get-memory-values
+;;   "Get values for list of named keys"
+;;   [robot keys]
+;;   (.getData (get-proxy robot :memory)
+;;             (make-variant (to-array keys))))
 
 ; posture
 (defn go-to-posture
