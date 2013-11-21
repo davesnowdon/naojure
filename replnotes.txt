@@ -1,0 +1,8 @@
+user=> (def app (make-application))
+#'user/app
+user=> (def sess (make-session "192.168.0.71" 9559))
+(def sess (com.aldebaran.qimessaging.Session.))
+
+ (def tts (.service sess "ALTextToSpeech"))
+
+(.call tts "say" (into-array ["ouch"]))
