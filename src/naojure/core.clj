@@ -74,6 +74,13 @@
   ([hostname port proxies]
      (add-proxies {:hostname hostname :port port} proxies)))
 
+(defn attach-session
+  ""
+  [robot]
+  (let [app (make-application)
+        session (make-session (:hostname robot) (:port robot))]
+    ))
+
 (defn make-application
   "Creates an instance of an application object"
   []
@@ -84,10 +91,16 @@
 (defn make-session
   "Create a session connected to a robot"
   [hostname port]
-  (let [session (com.aldebaran.qimessaging.Session.)
-        fut (.connect session (str "tcp://" hostname ":" port))]
-        (.wait fut 1000)
+  (let [session (com.aldebaran.qimessaging.Session.)]
         session))
+
+;; (defn make-session
+;;   "Create a session connected to a robot"
+;;   [hostname port]
+;;   (let [session (com.aldebaran.qimessaging.Session.)
+;;         fut (.connect session (str "tcp://" hostname ":" port))]
+;;         (.wait fut 1000)
+;;         session))
 
 (defn get-proxy
   "Gets a proxy from a robot, constructing it if necessary"
@@ -109,73 +122,70 @@
 (defn get-installed-behaviours
   "Return list of behaviours installed on robot"
   [robot]
-  (.getInstalledBehaviors (get-proxy robot :behaviour-manager)))
+  (call-service robot :behaviour-manager "getInstalledBehaviors" ))
 
 (defn get-running-behaviours
   "Get list of running behaviours"
   [robot]
-  (.getRunningBehaviors (get-proxy robot :behaviour-manager)))
+  (call-service robot :behaviour-manager "getRunningBehaviors"))
 
 (defn get-default-behaviours
   "Get list of default behaviours (behaviours set to run automatically)"
   [robot]
-  (.getDefaultBehaviors (get-proxy robot :behaviour-manager)))
+  (call-service robot :behaviour-manager "getDefaultBehaviors" ))
 
 (defn add-default-behaviour
   "Make the named behaviour auto run on robot boot"
   [robot behaviour-name]
-  (.addDefaultBehavior (get-proxy robot :behaviour-manager) behaviour-name))
+  (call-service robot :behaviour-manager "addDefaultBehavior" [behaviour-name]))
 
 (defn remove-default-behaviour
   "Stop the named behaviour auto running on robot boot"
   [robot behaviour-name]
-  (.removeDefaultBehavior (get-proxy robot :behaviour-manager) behaviour-name))
+  (call-service robot :behaviour-manager "removeDefaultBehavior" [behaviour-name]))
 
 (defn run-behaviour
   "Run the named behaviour"
   [robot behaviour-name]
-  (.runBehavior (get-proxy robot :behaviour-manager) behaviour-name))
+  (call-service robot :behaviour-manager "runBehavior" [behaviour-name]))
 
 (defn behaviour-present
   "Is the named behaviour present?"
   [robot behaviour-name]
-  (.isBehaviorPresent (get-proxy robot :behaviour-manager) behaviour-name))
+  (call-service robot :behaviour-manager "isBehaviorPresent" [behaviour-name]))
 
 (defn behaviour-running
   "Is the named behaviour running"
   [robot behaviour-name]
-  (.isBehaviorRunning (get-proxy robot :behaviour-manager) behaviour-name))
+  (call-service robot :behaviour-manager "isBehaviorRunning"  [behaviour-name]))
 
 ; memory
 (defn get-memory-keys
   "List memory keys"
   [robot]
-  (.getDataListName (get-proxy robot :memory)))
+  (call-service robot :memory "getDataListName"))
 
 (defn get-memory-keys-containing
   "List memory keys containing string value"
   [robot val]
-  (.getDataList (get-proxy robot :memory) val))
+  (call-service robot :memory"getDataList"  [val]))
 
-;; TODO need a way to unpack the Variant
-;; currently get the following error when trying to extract values from the result
-;; ClassNotFoundException com.aldebaran.proxy.Variant$typeV  java.net.URLClassLoader$1.run (URLClassLoader.java:366)
-;; (defn get-memory-value
-;;   "Get named value from memory"
-;;   [robot key]
-;;   (.getData (get-proxy robot :memory) key))
+(defn get-memory-value
+   "Get named value from memory"
+   [robot key]
+   (call-service robot :memory "getData" [key]))
 
-;; (defn get-memory-values
-;;   "Get values for list of named keys"
-;;   [robot keys]
-;;   (.getData (get-proxy robot :memory)
-;;             (make-variant (to-array keys))))
+(defn get-memory-values
+   "Get values for list of named keys"
+   [robot keys]
+   (call-service robot :memory "getData"
+             [(to-array keys)]))
 
 ; posture
 (defn go-to-posture
   "Move to the specified posture (use symbol). relative-speed is between zero and one"
   [robot posture relative-speed]
-  (.goToPosture (get-proxy robot :posture) (postures posture) relative-speed))
+  (call-service robot :posture "goToPosture" [(postures posture) relative-speed]))
 
 (defn crouch
   "Crouch"
@@ -237,87 +247,87 @@
 (defn wake-up
   "The robot wakes up: sets Motor on and, if needed, goes to initial position. For example, H25 or H21 sets the Stiffness on and keeps is current position."
   [robot]
-  (.wakeUp (get-proxy robot :motion)))
+  (call-service robot :motion "wakeUp"))
 
 (defn relax
   "The robot rests: goes to a relax and safe position and sets Motor off. For example, H25 or H21 goes to the Crouch posture and sets the Stiffness off."
   [robot]
-  (.rest (get-proxy robot :motion)))
+  (call-service robot :motion "rest"))
 
 (defn walk
   "Walk at the specified speed. x, y, & theta represent normalised velocities from 0.0 to 1.0"
   [robot x y theta]
-  (.moveToward (get-proxy robot :motion) x y theta))
+  (call-service robot :motion "moveToward" [x y theta]))
 
 (defn walk-to
   "Walk to a specified location in the robot's frame of reference"
   [robot x y theta]
-  (.moveTo (get-proxy robot :motion) x y theta))
+  (call-service robot :motion "moveTo" [x y theta]))
 
 (defn get-joint-angles
   "Return a map of the current joint angles for a robot"
   [robot]
   (zipmap joint-names
-          (.getAngles (get-proxy robot :motion)
-                      (make-variant "Body") true)))
+          (call-service robot :motion "getAngles"
+                      ["Body" true])))
 (defn get-body-names
   "Return names of joints in the specified chain"
   [robot name]
-  (.getBodyNames (get-proxy robot :motion) name))
+  (call-service robot :motion "getBodyNames"  [name]))
 
 ;; broken - can't construct variant holding array of values
 (defn set-joint-angles
   "Set the named joints to absolute changes"
   [robot names angles speed]
-  (.setAngles (get-proxy robot :motion)
-              (to-array names)
-              (to-array angles) speed))
+  (call-service robot :motion "setAngles"
+              [(to-array names)
+              (to-array angles) speed]))
 
 ;; broken - can't construct variant holding array of values
 (defn change-joint-angles
   "Relative changes to joint angles"
   [robot names changes speed]
-    (.changeAngles (get-proxy robot :motion)
-                   (to-array names)
-                   (to-array changes) speed))
+    (call-service robot :motion "changeAngles"
+                   [(to-array names)
+                   (to-array changes) speed]))
 
 (defn get-robot-position
   "Get the current position of the robot using the sensors if true"
   [robot use-sensors]
-  (.getRobotPosition (get-proxy robot :motion) use-sensors))
+  (call-service robot :motion "getRobotPosition"  [use-sensors]))
 
 (defn get-position
   "Get the current 6D position (x, y, z, wx, wy, wz) of named component, using the sensors if use-sensors is true"
   [robot name space use-sensors]
-  (.getPosition (get-proxy robot :motion) name space use-sensors))
+  (call-service robot :motion "getPosition" [name space use-sensors]))
 
 (defn get-sensor-names
   "Get the names of the available sensors"
   [robot]
-  (.getSensorNames (get-proxy robot :motion)))
+  (call-service robot :motion "getSensorNames"))
 
 ; text to speech
 (defn say
   "Say something"
   [robot text]
-  (.call (get-proxy robot :tts) "say" (into-array [text])))
+  (call-service robot :tts "say" [text]))
 
 (defn get-language
   "Get the currently defined text-to-speech language"
   [robot]
-  (.getLanguage (get-proxy robot :tts)))
+  (call-service robot :tts "getLanguage"))
 
 (defn set-language
   "Set the language the robot should use"
   [robot language]
-  (.setLanguage (get-proxy robot :tts) language))
+  (call-service robot :tts "setLanguage" [language]))
 
 (defn get-volume
   "Get the current volume for the robot"
   [robot]
-  (.getVolume (get-proxy robot :tts)))
+  (call-service robot :tts "getVolume"))
 
 (defn set-volume
   "Set the volume used by the robot"
   [robot vol]
-  (.setVolume (get-proxy robot :tts) (float vol)))
+  (call-service robot :tts "setVolume" [(float vol)]))
