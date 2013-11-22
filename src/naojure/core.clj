@@ -1,23 +1,23 @@
 (ns naojure.core)
 
 (def proxy-classes {
-                    :audio-player "com.aldebaran.proxy.ALAudioPlayerProxy"
-                    :backlight-detection "com.aldebaran.proxy.ALBacklightingDetectionProxy"
-                    :battery "com.aldebaran.proxy.ALBatteryProxy"
-                    :behaviour-manager "com.aldebaran.proxy.ALBehaviorManagerProxy"
-                    :darkness-detection "com.aldebaran.proxy.ALDarknessDetectionProxy"
-                    :leds "com.aldebaran.proxy.ALLedsProxy"
-                    :memory "com.aldebaran.proxy.ALMemoryProxy"
-                    :motion "com.aldebaran.proxy.ALMotionProxy"
-                    :navigation "com.aldebaran.proxy.ALNavigationProxy"
-                    :photo-capture "com.aldebaran.proxy.ALPhotoCaptureProxy"
-                    :posture "com.aldebaran.proxy.ALRobotPostureProxy"
-                    :preferences "com.aldebaran.proxy.ALPreferencesProxy"
-                    :sensors "com.aldebaran.proxy.ALSensorsProxy"
-                    :sonar "com.aldebaran.proxy.ALSonarProxy"
-                    :sound-detection "com.aldebaran.proxy.ALSoundDetectionProxy"
-                    :speech-recognition "com.aldebaran.proxy.ALSpeechRecognitionProxy"
-                    :tts "com.aldebaran.proxy.ALTextToSpeechProxy"
+                    :audio-player "ALAudioPlayer"
+                    :backlight-detection "ALBacklightingDetection"
+                    :battery "ALBattery"
+                    :behaviour-manager "ALBehaviorManager"
+                    :darkness-detection "ALDarknessDetection"
+                    :leds "ALLeds"
+                    :memory "ALMemory"
+                    :motion "ALMotion"
+                    :navigation "ALNavigation"
+                    :photo-capture "ALPhotoCapture"
+                    :posture "ALRobotPosture"
+                    :preferences "ALPreferences"
+                    :sensors "ALSensors"
+                    :sonar "ALSonar"
+                    :sound-detection "ALSoundDetection"
+                    :speech-recognition "ALSpeechRecognitionProxy"
+                    :tts "ALTextToSpeechProxy"
                     })
 
 (def joint-names '("HeadYaw", "HeadPitch",
@@ -44,16 +44,21 @@
 (def FRAME_ROBOT 2)
 
 ; From http://stackoverflow.com/questions/9167457/in-clojure-how-to-use-a-java-class-dynamically
-(defn construct
-  "Construct an instance of class from class and arguments."
-  [klass & args]
-  (clojure.lang.Reflector/invokeConstructor klass (into-array Object args)))
+;; (defn construct
+;;   "Construct an instance of class from class and arguments."
+;;   [klass & args]
+;;   (clojure.lang.Reflector/invokeConstructor klass (into-array Object args)))
+
+;; (defn make-proxy
+;;   "Build a proxy from a robot and the symbol representing a proxy"
+;;   [robot proxy-sym]
+;;   (construct (Class/forName (proxy-classes proxy-sym))
+;;              (:hostname robot) (:port robot)))
 
 (defn make-proxy
-  "Build a proxy from a robot and the symbol representing a proxy"
-  [robot proxy-sym]
-  (construct (Class/forName (proxy-classes proxy-sym))
-             (:hostname robot) (:port robot)))
+  "Build a proxy from a session and the symbol for the service"
+  [session proxy-sym]
+  (.service session (proxy-classes proxy-sym)))
 
 (defn add-proxies
   "Adds the proxies passed as symbols to the robot definition"
@@ -74,6 +79,8 @@
   []
   (com.aldebaran.qimessaging.Application.))
 
+
+; java function to wait on the future?
 (defn make-session
   "Create a session connected to a robot"
   [hostname port]
@@ -87,6 +94,11 @@
   [robot proxy]
   (let [p (proxy robot)]
     (if (nil? p) (make-proxy robot proxy) p)))
+
+(defn call-service
+  "Call an operation on a service"
+  [robot proxy-sym operation params]
+  (.call (get-proxy robot proxy-sym) operation (into-array params)))
 
 ;; (defn make-variant
 ;;   "Make instance of Aldebaran ALValue (Variant in java)"
@@ -288,7 +300,7 @@
 (defn say
   "Say something"
   [robot text]
-  (.say (get-proxy robot :tts) text))
+  (.call (get-proxy robot :tts) "say" (into-array [text])))
 
 (defn get-language
   "Get the currently defined text-to-speech language"
