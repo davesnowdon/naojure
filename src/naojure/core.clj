@@ -72,7 +72,6 @@
   []
   (com.aldebaran.qimessaging.Application.))
 
-; java function to wait on the future?
 (defn make-session
   "Create a session connected to a robot"
   [hostname port]
@@ -107,10 +106,7 @@
   [robot proxy-sym operation params]
   (.call (get-proxy robot proxy-sym) operation (into-array params)))
 
-;; (defn make-variant
-;;   "Make instance of Aldebaran ALValue (Variant in java)"
-;;   [val]
-;;   (new com.aldebaran.proxy.Variant val))
+; event handling
 
 ; behaviour management
 (defn get-installed-behaviours
