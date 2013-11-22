@@ -67,25 +67,10 @@
          (zipmap proxy-list (map #(make-proxy robot %)
                                  proxy-list))))
 
-(defn make-robot
-  "Constructs a map representing a robot including any requested proxies. Most functions will construct the proxies they need on-the-fly if they are not already defined but since these are not stored it is more efficient to ask for any needed proxies in the call to make-robot."
-  ([hostname] {:hostname hostname :port 9559})
-  ([hostname port] ( {:hostname hostname :port port}))
-  ([hostname port proxies]
-     (add-proxies {:hostname hostname :port port} proxies)))
-
-(defn attach-session
-  ""
-  [robot]
-  (let [app (make-application)
-        session (make-session (:hostname robot) (:port robot))]
-    ))
-
 (defn make-application
   "Creates an instance of an application object"
   []
   (com.aldebaran.qimessaging.Application.))
-
 
 ; java function to wait on the future?
 (defn make-session
@@ -101,6 +86,20 @@
 ;;         fut (.connect session (str "tcp://" hostname ":" port))]
 ;;         (.wait fut 1000)
 ;;         session))
+
+(defn attach-session
+  "Attach the java application and session objects required to interact with the Aldebaran API"
+  [robot]
+  (let [app (make-application)
+        session (make-session (:hostname robot) (:port robot))]
+    (assoc robot :application app :session session)))
+
+(defn make-robot
+  "Constructs a map representing a robot including any requested proxies. Most functions will construct the proxies they need on-the-fly if they are not already defined but since these are not stored it is more efficient to ask for any needed proxies in the call to make-robot."
+  ([hostname] (attach-session {:hostname hostname :port 9559}))
+  ([hostname port] (attach-session {:hostname hostname :port port}))
+  ([hostname port proxies]
+     (add-proxies (attach-session {:hostname hostname :port port}) proxies)))
 
 (defn get-proxy
   "Gets a proxy from a robot, constructing it if necessary"
