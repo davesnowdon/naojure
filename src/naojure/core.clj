@@ -1,6 +1,6 @@
 (ns naojure.core)
 
-(def proxy-classes {
+(def proxy-names {
                     :audio-player "ALAudioPlayer"
                     :backlight-detection "ALBacklightingDetection"
                     :battery "ALBattery"
@@ -52,13 +52,13 @@
 ;; (defn make-proxy
 ;;   "Build a proxy from a robot and the symbol representing a proxy"
 ;;   [robot proxy-sym]
-;;   (construct (Class/forName (proxy-classes proxy-sym))
+;;   (construct (Class/forName (proxy-names proxy-sym))
 ;;              (:hostname robot) (:port robot)))
 
 (defn make-proxy
   "Build a proxy from a session and the symbol for the service"
-  [session proxy-sym]
-  (.service session (proxy-classes proxy-sym)))
+  [robot proxy-sym]
+  (.service (:session robot) (proxy-names proxy-sym)))
 
 (defn add-proxies
   "Adds the proxies passed as symbols to the robot definition"
