@@ -76,16 +76,11 @@
 (defn make-session
   "Create a session connected to a robot"
   [hostname port]
-  (let [session (com.aldebaran.qimessaging.Session.)]
-        session))
-
-;; (defn make-session
-;;   "Create a session connected to a robot"
-;;   [hostname port]
-;;   (let [session (com.aldebaran.qimessaging.Session.)
-;;         fut (.connect session (str "tcp://" hostname ":" port))]
-;;         (.wait fut 1000)
-;;         session))
+  (let [session (com.aldebaran.qimessaging.Session.)
+        fut (.connect session (str "tcp://" hostname ":" port))]
+    (locking fut
+      (.wait fut 1000))
+    session))
 
 (defn attach-session
   "Attach the java application and session objects required to interact with the Aldebaran API"
