@@ -16,8 +16,8 @@
                     :sensors "ALSensors"
                     :sonar "ALSonar"
                     :sound-detection "ALSoundDetection"
-                    :speech-recognition "ALSpeechRecognitionProxy"
-                    :tts "ALTextToSpeechProxy"
+                    :speech-recognition "ALSpeechRecognition"
+                    :tts "ALTextToSpeech"
                     })
 
 (def joint-names '("HeadYaw", "HeadPitch",
@@ -107,6 +107,21 @@
   (.call (get-proxy robot proxy-sym) operation (into-array params)))
 
 ; event handling
+
+; almost there, but get
+;[E] 4426 qimessaging.jni: Cannot find java method invoke (Ljava/lang/Object;)V
+;[W] 4426 qitype.signal: Exception caught from signal subscriber: Cannot find method
+(defn add-event-handler
+  "Call the provided clojure function on the named event"
+  [robot event callback]
+  (let [memory (get-proxy robot :memory)
+        subscriber (.get (.call memory "subscriber" (into-array [event])))]
+    (.connect subscriber "signal::(m)" "invoke::m(m)" callback)))
+
+(defn start-main-loop
+  "Starts the Qimessaging event loop"
+  [robot]
+  (.start (Thread. (fn [] (.run (:application robot))))))
 
 ; behaviour management
 (defn get-installed-behaviours
