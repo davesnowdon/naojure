@@ -1,4 +1,6 @@
-(ns naojure.core)
+(ns naojure.core
+  (:require [clojure.core.async :as async
+             :refer [<!! >!! timeout chan alt!! thread]]))
 
 (def proxy-names {
                     :audio-player "ALAudioPlayer"
@@ -97,7 +99,7 @@
 
 (defn get-proxy
   "Gets a proxy from a robot, constructing it if necessary"
-  [robot proxy]
+  [<robot proxy]
   (let [p (proxy robot)]
     (if (nil? p) (make-proxy robot proxy) p)))
 
@@ -117,6 +119,14 @@
   (let [memory (get-proxy robot :memory)
         subscriber (.get (.call memory "subscriber" (into-array [event])))]
     (.connect subscriber "signal::(m)" "invoke::m(m)" callback)))
+
+(defn event-chan
+  "Create a channel that receives the named event and sends the data to a channel"
+  [robot event]
+  (let [rc (chan)
+        callback (fn [value] (>!! rc value))]
+    (add-event-handler robot event callback)
+    rc))
 
 (defn start-event-loop
   "Starts the Qimessaging Application event loop - there can only be one of these running"
