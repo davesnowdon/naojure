@@ -118,10 +118,15 @@
         subscriber (.get (.call memory "subscriber" (into-array [event])))]
     (.connect subscriber "signal::(m)" "invoke::m(m)" callback)))
 
-(defn start-main-loop
-  "Starts the Qimessaging event loop"
+(defn start-event-loop
+  "Starts the Qimessaging Application event loop - there can only be one of these running"
   [robot]
   (.start (Thread. (fn [] (.run (:application robot))))))
+
+(defn stop-event-loop
+  "Stops the Qimessaging application event loop"
+  [robot]
+  (.stop (:application robot)))
 
 ; behaviour management
 (defn get-installed-behaviours
