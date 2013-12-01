@@ -109,10 +109,6 @@
   (.call (get-proxy robot proxy-sym) operation (into-array params)))
 
 ; event handling
-
-; almost there, but get
-;[E] 4426 qimessaging.jni: Cannot find java method invoke (Ljava/lang/Object;)V
-;[W] 4426 qitype.signal: Exception caught from signal subscriber: Cannot find method
 (defn add-event-handler
   "Call the provided clojure function on the named event"
   [robot event callback]
