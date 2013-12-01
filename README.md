@@ -41,7 +41,7 @@ You need to install the Aldebaran jar file for your platform on locally.  You ca
 [lein-localrepo](https://github.com/kumarshantanu/lein-localrepo) plug
 in. Run:
 
-    lein localrepo install qimessaging-1.22.0.142-linux64.jar com.aldebaran/qimessaging 1.22.0
+    lein localrepo install qimessaging-1.22.0.142-linux64.jar com.aldebaran/qimessaging 1.22.1
 
 Running "lein deps" should then install the java jar and it should then be
 possible to run "lein repl" and use the Aldebaran classes.
