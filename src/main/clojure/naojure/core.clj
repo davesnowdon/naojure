@@ -99,7 +99,7 @@
 
 (defn get-proxy
   "Gets a proxy from a robot, constructing it if necessary"
-  [<robot proxy]
+  [robot proxy]
   (let [p (proxy robot)]
     (if (nil? p) (make-proxy robot proxy) p)))
 
@@ -117,8 +117,9 @@
   "Call the provided clojure function on the named event"
   [robot event callback]
   (let [memory (get-proxy robot :memory)
-        subscriber (.get (.call memory "subscriber" (into-array [event])))]
-    (.connect subscriber "signal::(m)" "invoke::m(m)" callback)))
+        subscriber (.get (.call memory "subscriber" (into-array [event])))
+        wrapper (com.davesnowdon.naojure.InvokeWrapper. event callback)]
+    (.connect subscriber "signal::(m)" "invoke::(m)" wrapper)))
 
 (defn event-chan
   "Create a channel that receives the named event and sends the data to a channel"

@@ -1,6 +1,10 @@
 (defproject naojure "0.0.1-SNAPSHOT"
-  :description "Clojure wrapper for Aldebaran Robotics java NAOQI binding. Depends on the Aldebaran jar file and native dependencies being installed in a local maven repo"
+  :description "Clojure wrapper for Aldebaran Robotics java NAOQI binding. Depends on the Aldebaran jar (which includes native dependencies) being installed in local repo"
   :url "https://github.com/davesnowdon/naojure"
+  :license {:name "GNU Lesser General Public License 2.1"
+            :url "http://www.gnu.org/licenses/lgpl-2.1.html"
+            :distribution :repo}
+  :min-lein-version "2.0.0"
   :source-paths ["src" "src/main/clojure"]
   :java-source-paths ["src/main/java"]
   :test-paths ["test" "src/test/clojure"]
