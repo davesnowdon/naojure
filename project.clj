@@ -1,4 +1,4 @@
-(defproject naojure "0.0.1-SNAPSHOT"
+(defproject naojure "0.2.0"
   :description "Clojure wrapper for Aldebaran Robotics java NAOQI binding. Depends on the Aldebaran jar (which includes native dependencies) being installed in local repo"
   :url "https://github.com/davesnowdon/naojure"
   :license {:name "GNU Lesser General Public License 2.1"
