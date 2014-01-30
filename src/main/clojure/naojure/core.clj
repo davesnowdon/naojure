@@ -57,24 +57,24 @@
 ;;   (construct (Class/forName (proxy-names proxy-sym))
 ;;              (:hostname robot) (:port robot)))
 
-(defn make-proxy
+(defn- make-proxy
   "Build a proxy from a session and the symbol for the service"
   [robot proxy-sym]
   (.service (:session robot) (proxy-names proxy-sym)))
 
-(defn add-proxies
+(defn- add-proxies
   "Adds the proxies passed as symbols to the robot definition"
   [robot proxy-list]
   (merge robot
          (zipmap proxy-list (map #(make-proxy robot %)
                                  proxy-list))))
 
-(defn make-application
+(defn- make-application
   "Creates an instance of an application object"
   []
   (com.aldebaran.qimessaging.Application.))
 
-(defn make-session
+(defn- make-session
   "Create a session connected to a robot"
   [hostname port]
   (let [session (com.aldebaran.qimessaging.Session.)
@@ -83,7 +83,7 @@
       (.wait fut 1000))
     session))
 
-(defn attach-session
+(defn- attach-session
   "Attach the java application and session objects required to interact with the Aldebaran API"
   [robot]
   (let [app (make-application)
@@ -108,14 +108,54 @@
   [robot proxy-sym operation params]
   (.call (get-proxy robot proxy-sym) operation (into-array params)))
 
-; event handling
-(defn add-event-handler
-  "Call the provided clojure function on the named event"
-  [robot event callback]
+
+;; event handling
+(defn- event-dispatcher
+  "Calls callback functions and sends data on channel. Expects atom containign map of channel to use and possibly empty sequence of functions"
+  [event event-state value]
+  (do
+    (doseq [cb (:callbacks @event-state)] (cb event value))
+    (if-let [ch (:channel @event-state)]
+      (put! ch value))))
+
+(defn- make-event-wrapper
+  "Creates a wrapper than QiMessaging can use as a callback and returns a robot with an atom holding the state in its events map"
+  [robot event]
   (let [memory (get-proxy robot :memory)
         subscriber (.get (.call memory "subscriber" (into-array [event])))
-        wrapper (com.davesnowdon.naojure.InvokeWrapper. event callback)]
-    (.connect subscriber "signal::(m)" "invoke::(m)" wrapper)))
+        event-state (atom {:event event
+                           :subscriber subscriber
+                           :channel nil
+                           :callbacks #{}})
+        wrapper (com.davesnowdon.naojure.InvokeWrapper.
+                 event event-dispatcher event-state)]
+    (do
+      (swap! event-state assoc :wrapper wrapper)
+      (.connect subscriber "signal::(m)" "invoke::(m)" wrapper)
+      (assoc-in robot [:events event event-state]))))
+
+(defn- get-event-state
+  [robot event]
+  (get-in robot [:events event]))
+
+(defn- get-robot-with-wrapper
+  "Return map of robot and event state"
+  [robot event]
+  (if-let [event-state (get-event-state robot event)]
+    {:robot robot
+     :event-state event-state}
+    (let [new-robot (make-event-wrapper robot event)]
+      {:robot new-robot
+       :event-state (get-event-state new-robot event)})))
+
+(defn add-event-handler
+  "Arranges for the specified function to be called on event"
+  [robot event handler-fn]
+  (let [{new-robot :robot event-state :event-state}
+        (get-robot-with-wrapper robot event)
+        callbacks (:callbacks @event-state)]
+    (swap! event-state assoc :callbacks (conj callbacks handler-fn))
+    new-robot))
 
 (defn event-chan
   "Create a channel that receives the named event and sends the data to a channel"
@@ -348,3 +388,5 @@
   "Set the volume used by the robot"
   [robot vol]
   (call-service robot :tts "setVolume" [(float vol)]))
+
+;; motion

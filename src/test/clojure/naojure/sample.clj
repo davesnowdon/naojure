@@ -36,13 +36,13 @@ variants
 - chan actions
 - time chan actions
 
-(nao/add-chan robot :event chan)
-(nao/remove-chan robot :event chan)
-(nao/remove-all-chan robot :event)
+(nao/add-event-chan robot :event chan)
+(nao/remove-event-chan robot :event chan)
+(nao/remove-all-event-chan robot :event)
 
-(nao/add-callback robot :event fn)
-(nao/remove-callback robot :event fn)
-(nao/clear-callback robot :event)
+(nao/add-event-handler robot :event fn)
+(nao/remove-event-handler robot :event fn)
+(nao/clear-event-handlers robot :event)
 
 (def exterminate "file://somewhere in nao filesystem")
 - get exterminate sound sample
