@@ -112,7 +112,7 @@
 ;; event handling
 (defn- event-dispatcher
   "Calls callback functions and sends data on channel. Expects atom containign map of channel to use and possibly empty sequence of functions"
-  [event event-state value]
+  [event value event-state]
   (do
     (doseq [cb (:callbacks @event-state)] (cb event value))
     (go (doseq [ch (:channels @event-state)] (>! ch event value)))))
