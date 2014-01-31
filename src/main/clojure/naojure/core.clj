@@ -1,6 +1,6 @@
 (ns naojure.core
   (:require [clojure.core.async :as async
-             :refer [<!! >!! timeout chan alt!! thread]]))
+             :refer [<! >! timeout chan alt! go]]))
 
 (def proxy-names {
                     :audio-player "ALAudioPlayer"
@@ -115,8 +115,7 @@
   [event event-state value]
   (do
     (doseq [cb (:callbacks @event-state)] (cb event value))
-    (if-let [ch (:channel @event-state)]
-      (put! ch value))))
+    (go (doseq [ch (:channels @event-state)] (>! ch event value)))))
 
 (defn- make-event-wrapper
   "Creates a wrapper than QiMessaging can use as a callback and returns a robot with an atom holding the state in its events map"
@@ -125,14 +124,14 @@
         subscriber (.get (.call memory "subscriber" (into-array [event])))
         event-state (atom {:event event
                            :subscriber subscriber
-                           :channel nil
+                           :channels #{}
                            :callbacks #{}})
         wrapper (com.davesnowdon.naojure.InvokeWrapper.
                  event event-dispatcher event-state)]
     (do
       (swap! event-state assoc :wrapper wrapper)
       (.connect subscriber "signal::(m)" "invoke::(m)" wrapper)
-      (assoc-in robot [:events event event-state]))))
+      (assoc-in robot [:events event] event-state))))
 
 (defn- get-event-state
   [robot event]
@@ -157,13 +156,50 @@
     (swap! event-state assoc :callbacks (conj callbacks handler-fn))
     new-robot))
 
-(defn event-chan
-  "Create a channel that receives the named event and sends the data to a channel"
+(defn remove-event-handler
+  "Remove the specified function from set of callbacks for event. Channels not affected."
+  [robot event handler-fn]
+  (let [event-state (get-event-state robot event)
+        callbacks (:callbacks @event-state)]
+    (swap! event-state assoc :callbacks (disj callbacks handler-fn))
+    robot))
+
+(defn clear-event-handlers
+  "Remove all callbacks for specified event. Channels not affected."
   [robot event]
-  (let [rc (chan)
-        callback (fn [value] (>!! rc value))]
-    (add-event-handler robot event callback)
-    rc))
+  (let [event-state (get-event-state robot event)]
+    (swap! event-state assoc :callbacks #{})
+    robot))
+
+(defn add-event-chan
+  "Arranges values from event to be send on specified channel"
+  [robot event ch]
+  (let [{new-robot :robot event-state :event-state}
+        (get-robot-with-wrapper robot event)
+        channels (:channels @event-state)]
+    (swap! event-state assoc :channels (conj channels ch))
+    new-robot))
+
+(defn remove-event-chan
+  "Remove the specified channel from set of channels for event. Callbacks not affected."
+  [robot event ch]
+  (let [event-state (get-event-state robot event)
+        channels (:channels @event-state)]
+    (swap! event-state assoc :channels (disj channels ch))
+    robot))
+
+(defn clear-event-chan
+  "Remove all channels for specified event. Callbacks not affected."
+  [robot event]
+  (let [event-state (get-event-state robot event)]
+    (swap! event-state assoc :channels #{})
+    robot))
+
+;; TODO implement means to tell subscribe to stop notifying for given event
+(defn clear-event
+  "Stop subsribe from sending events"
+  [robot event]
+  (println "clear-event not implemented yet!"))
 
 (defn start-event-loop
   "Starts the Qimessaging Application event loop - there can only be one of these running"

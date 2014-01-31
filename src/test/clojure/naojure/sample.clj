@@ -44,5 +44,7 @@ variants
 (nao/remove-event-handler robot :event fn)
 (nao/clear-event-handlers robot :event)
 
+(nao/clear-event robot :event)
+
 (def exterminate "file://somewhere in nao filesystem")
 - get exterminate sound sample
