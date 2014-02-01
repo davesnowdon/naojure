@@ -22,15 +22,15 @@
                     :tts "ALTextToSpeech"
                     })
 
-(def joint-names '("HeadYaw", "HeadPitch",
-                   "LShoulderPitch", "LShoulderRoll", "LElbowYaw", "LElbowRoll",
-                   "LWristYaw", "LHand",
-                   "LHipYawPitch", "LHipRoll", "LHipPitch",
-                   "LKneePitch", "LAnklePitch", "LAnkleRoll",
-                   "RHipYawPitch", "RHipRoll", "RHipPitch",
-                   "RKneePitch",  "RAnklePitch", "RAnkleRoll",
-                   "RShoulderPitch", "RShoulderRoll", "RElbowYaw", "RElbowRoll",
-                   "RWristYaw", "RHand"))
+(def joint-names ["HeadYaw", "HeadPitch",
+                  "LShoulderPitch", "LShoulderRoll", "LElbowYaw", "LElbowRoll",
+                  "LWristYaw", "LHand",
+                  "LHipYawPitch", "LHipRoll", "LHipPitch",
+                  "LKneePitch", "LAnklePitch", "LAnkleRoll",
+                  "RHipYawPitch", "RHipRoll", "RHipPitch",
+                  "RKneePitch",  "RAnklePitch", "RAnkleRoll",
+                  "RShoulderPitch", "RShoulderRoll", "RElbowYaw", "RElbowRoll",
+                  "RWristYaw", "RHand"])
 
 (def postures {:crouch "Crouch"
                :lying-back "LyingBack"
@@ -460,3 +460,136 @@
   (call-service robot :tts "setVolume" [(float vol)]))
 
 ;; motion
+(defn- concat-joints
+  [a b]
+  (let [{an :names av :values} a
+        {bn :names bv :values} b]
+    {:names (concat an bn) :values (concat av bv)}))
+
+(defn- arms_left_forward [params]
+  (let [angle1 (get params 0 0)
+        angle2 (get params 1 0)]
+    {:joints {:names [ "LShoulderPitch" "LShoulderRoll"]
+              :values [ (- angle1) angle2]}}))
+
+(defn- arms_right_forward [params]
+  (let [angle1 (get params 0 0)
+        angle2 (get params 1 0)]
+    {:joints {:names [ "RShoulderPitch"  "RShoulderRoll"]
+              :values [ (- angle1) (- angle2)]}}))
+
+(defn- arms_forward [params]
+  (concat-joints
+   (:joints (arms_left_forward params))
+   (:joints (arms_right_forward params))))
+
+
+(defn- arms_left_out [params]
+  (let [angle1 (get params 0 0)
+        angle2 (get params 1 0)]
+    {:joints {:names ["LShoulderPitch" "LShoulderRoll"]
+              :values [(- angle1) (+ 90 angle2)]}}))
+
+(defn- arms_right_out [params]
+  (let [angle1 (get params 0 0)
+        angle2 (get params 1 0)]
+    {:joints {:names ["RShoulderPitch"  "RShoulderRoll"]
+              :values [ (- angle1) (- -90 angle2)]}}))
+
+(defn- arms_out [params]
+  (concat-joints
+   (:joints (arms_left_out params))
+   (:joints (arms_right_out params))))
+
+(defn- arms_left_up [params]
+  (let [angle1 (get params 0 0)
+        angle2 (get params 1 0)]
+    {:joints {:names ["LShoulderPitch" "LShoulderRoll"]
+              :values [(- -90 angle1) angle2]}}))
+
+(defn- arms_right_up [params]
+  (let [angle1 (get params 0 0)
+        angle2 (get params 1 0)]
+    {:joints {:names ["RShoulderPitch"  "RShoulderRoll"]
+              :values [(- -90 angle1) (- angle2)]}}))
+
+(defn- arms_up [params]
+  (concat-joints
+   (:joints (arms_left_up params))
+   (:joints (arms_right_up params))))
+
+(defn- arms_left_down [params]
+  (let [angle1 (get params 0 0)
+        angle2 (get params 1 0)]
+    {:joints {:names ["LShoulderPitch" "LShoulderRoll"]
+              :values [ (- 90 angle1) angle2]}}))
+
+(defn- arms_right_down [params]
+  (let [angle1 (get params 0 0)
+        angle2 (get params 1 0)]
+    {:joints {:names ["RShoulderPitch"  "RShoulderRoll"]
+              :values [ (- 90 angle1) (- angle2)]}}))
+
+(defn- arms_down [params]
+  (concat-joints
+   (:joints (arms_left_down params))
+   (:joints (arms_right_down params))))
+
+(defn- arms_left_back [params]
+  (let [angle1 (get params 0 0)
+        angle2 (get params 1 0)]
+    {:joints {:names ["LShoulderPitch" "LShoulderRoll"]
+              :values [ (- 119.5 angle1) angle2]}}))
+
+(defn- arms_right_back [params]
+  (let [angle1 (get params 0 0)
+        angle2 (get params 1 0)]
+    {:joints {:names ["RShoulderPitch"  "RShoulderRoll"]
+              :values [ (- 119.5 angle1) (- angle2)]}}))
+
+(defn- arms_back [params]
+  (concat-joints
+   (:joints (arms_left_back params))
+   (:joints (arms_right_back params))))
+
+(defn arms
+  [action & params]
+  (( {:forward arms_forward
+      :left_forward arms_left_forward
+      :right_forward arms_right_forward
+      :out arms_out
+      :left_out arms_left_out
+      :right_out arms_right_out
+      :up arms_up
+      :left_up arms_left_up
+      :right_up arms_right_up
+      :down arms_down
+      :left_down arms_left_down
+      :right_down arms_right_down
+      :back arms_back
+      :left_back arms_left_back
+      :right_back arms_right_back
+      } action) params))
+
+(defn- only-joint-actions
+  "Return only the values of joint actions"
+  [actions]
+  (->> actions
+       (map :joints)
+       (filter identity)))
+
+(defn do-joints
+  "Make action for joint changes if any"
+  [joint-lists duration]
+  (if-let [{:keys [names values]}
+           (cond
+            (> 1 (count joints)) (reduce concat_joints joints)
+            (= 1 (count joints)) joints)]
+    ))
+
+;; TODO make the duration and channel params optional
+(defn donao
+  "Accepts a number of parameters specifying robot actions and executes them"
+  [robot duration chan & actions]
+  (let [joint-changes (only-joint-actions actions)]
+    ))
