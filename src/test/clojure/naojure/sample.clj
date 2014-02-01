@@ -1,6 +1,9 @@
 (ns naojure.sample
   (:require [naojure.core :as nao :refer []]))
 
+(require '[naojure.core :as nao]
+         '[clojure.core.async :as async :refer [<! >! timeout chan alt! go]])
+
 ;; examples of how we'd like to control NAO with clojure
 
 ;; need to be careful that nap/do does not hide built-in do
@@ -8,9 +11,22 @@
 
 
 ;; update with IP address
-(def robot (nao/make-robot "127.0.0.1"))
+(def robot (nao/make-robot "192.168.0.71"))
 
 (nao/say robot "Hello clojure")
+
+(nao/start-event-loop robot)
+
+(defn evprint [e v] (println "Callback" e v))
+
+(def robot (nao/add-event-handler robot "LeftBumperPressed" evprint))
+
+(def ch1 (async/chan))
+
+(def robot (nao/add-event-chan robot "RightBumperPressed" ch1))
+
+(go (while true (println "Right Bumper" (<! ch1))))
+
 
 ;; complete movement in default time
 (nao/donao
