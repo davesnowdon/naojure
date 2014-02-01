@@ -105,8 +105,12 @@
 
 (defn call-service
   "Call an operation on a service"
-  [robot proxy-sym operation params]
-  (.call (get-proxy robot proxy-sym) operation (into-array params)))
+  ([robot proxy-sym operation]
+     (.call (get-proxy robot proxy-sym) operation
+            (into-array Object [])))
+  ([robot proxy-sym operation params]
+     (.call (get-proxy robot proxy-sym) operation
+            (into-array Object params))))
 
 
 ;; event handling
@@ -257,25 +261,40 @@
 (defn get-memory-keys
   "List memory keys"
   [robot]
-  (call-service robot :memory "getDataListName"))
+  (->
+   (call-service robot :memory "getDataListName")
+   (.get)))
 
 (defn get-memory-keys-containing
   "List memory keys containing string value"
   [robot val]
-  (call-service robot :memory"getDataList"  [val]))
+  (->
+   (call-service robot :memory"getDataList"  [val])
+   (.get)))
 
 (defn get-memory-value
    "Get named value from memory"
    [robot key]
-   (call-service robot :memory "getData" [key]))
+   (->
+    (call-service robot :memory "getData" [key])
+    (.get)))
 
 (defn get-memory-values
    "Get values for list of named keys"
    [robot keys]
-   (call-service robot :memory "getData"
-             [(to-array keys)]))
+   (->
+    (call-service robot :memory "getData"
+                  [(to-array keys)])
+    (.get)))
 
 ; posture
+(defn get-posture-list
+  "Get list of defined postures from robot"
+  [robot]
+  (->
+   (call-service robot :posture "getPostureList")
+   (.get)))
+
 (defn go-to-posture
   "Move to the specified posture (use symbol). relative-speed is between zero and one"
   [robot posture relative-speed]
@@ -284,56 +303,56 @@
 (defn crouch
   "Crouch"
   ([robot]
-     (go-to-posture robot :crouch 1.0))
+     (go-to-posture robot :crouch (Float. 1.0)))
   ([robot speed]
      (go-to-posture robot :crouch speed)))
 
 (defn lie-on-back
   "Lie on back"
   ([robot]
-     (go-to-posture robot :lying-back 1.0))
+     (go-to-posture robot :lying-back (Float. 1.0)))
   ([robot speed]
      (go-to-posture robot :lying-back speed)))
 
 (defn lie-on-belly
   "Lie on belly"
   ([robot]
-     (go-to-posture robot :lying-belly 1.0))
+     (go-to-posture robot :lying-belly (Float. 1.0)))
   ([robot speed]
      (go-to-posture robot :lying-belly speed)))
 
 (defn sit
   "Sit"
   ([robot]
-     (go-to-posture robot :sit 1.0))
+     (go-to-posture robot :sit (Float. 1.0)))
   ([robot speed]
      (go-to-posture robot :sit speed)))
 
 (defn sit-relaxed
   "Relaxed sit"
   ([robot]
-     (go-to-posture robot :sit-relax 1.0))
+     (go-to-posture robot :sit-relax (Float. 1.0)))
   ([robot speed]
      (go-to-posture robot :sit-relax speed)))
 
 (defn stand
   "Stand up"
   ([robot]
-     (go-to-posture robot :stand 1.0))
+     (go-to-posture robot :stand (Float. 1.0)))
   ([robot speed]
      (go-to-posture robot :stand speed)))
 
 (defn stand-init
   "Stand up (init)"
   ([robot]
-     (go-to-posture robot :stand-init 1.0))
+     (go-to-posture robot :stand-init (Float. 1.0)))
   ([robot speed]
      (go-to-posture robot :stand-init speed)))
 
 (defn stand-zero
   "Stand up (zero)"
   ([robot]
-     (go-to-posture robot :stand-zero 1.0))
+     (go-to-posture robot :stand-zero (Float. 1.0)))
   ([robot speed]
      (go-to-posture robot :stand-zero speed)))
 
