@@ -114,8 +114,9 @@
   "Calls callback functions and sends data on channel. Expects atom containign map of channel to use and possibly empty sequence of functions"
   [event value event-state]
   (do
+;;    (println "event-dispatcher" event)
     (doseq [cb (:callbacks @event-state)] (cb event value))
-    (go (doseq [ch (:channels @event-state)] (>! ch event value)))))
+    (go (doseq [ch (:channels @event-state)] (>! ch [ event value])))))
 
 (defn- make-event-wrapper
   "Creates a wrapper than QiMessaging can use as a callback and returns a robot with an atom holding the state in its events map"
