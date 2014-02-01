@@ -380,13 +380,17 @@
 (defn get-joint-angles
   "Return a map of the current joint angles for a robot"
   [robot]
-  (zipmap joint-names
-          (call-service robot :motion "getAngles"
-                      ["Body" true])))
+  (-> (call-service robot :motion "getAngles"
+                    ["Body" Boolean/TRUE])
+      (.get)
+      (zipmap joint-names)))
+
 (defn get-body-names
   "Return names of joints in the specified chain"
   [robot name]
-  (call-service robot :motion "getBodyNames"  [name]))
+  (->
+   (call-service robot :motion "getBodyNames"  [name])
+   (.get)))
 
 ;; broken - can't construct variant holding array of values
 (defn set-joint-angles
@@ -407,17 +411,23 @@
 (defn get-robot-position
   "Get the current position of the robot using the sensors if true"
   [robot use-sensors]
-  (call-service robot :motion "getRobotPosition"  [use-sensors]))
+  (->
+   (call-service robot :motion "getRobotPosition"  [use-sensors])
+   (.get)))
 
 (defn get-position
   "Get the current 6D position (x, y, z, wx, wy, wz) of named component, using the sensors if use-sensors is true"
   [robot name space use-sensors]
-  (call-service robot :motion "getPosition" [name space use-sensors]))
+  (->
+   (call-service robot :motion "getPosition" [name space use-sensors])
+   (.get)))
 
 (defn get-sensor-names
   "Get the names of the available sensors"
   [robot]
-  (call-service robot :motion "getSensorNames"))
+  (->
+   (call-service robot :motion "getSensorNames")
+   (.get)))
 
 ; text to speech
 (defn say
@@ -428,7 +438,9 @@
 (defn get-language
   "Get the currently defined text-to-speech language"
   [robot]
-  (call-service robot :tts "getLanguage"))
+  (->
+   (call-service robot :tts "getLanguage")
+   (.get)))
 
 (defn set-language
   "Set the language the robot should use"
@@ -438,7 +450,9 @@
 (defn get-volume
   "Get the current volume for the robot"
   [robot]
-  (call-service robot :tts "getVolume"))
+  (->
+   (call-service robot :tts "getVolume")
+   (.get)))
 
 (defn set-volume
   "Set the volume used by the robot"
