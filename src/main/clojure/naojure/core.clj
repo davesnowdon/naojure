@@ -103,7 +103,7 @@
   (let [p (proxy robot)]
     (if (nil? p) (make-proxy robot proxy) p)))
 
-(defn- future-callback-wrapper
+(defn future-callback-wrapper
   ([future success]
      (.addCallback future
                      (com.davesnowdon.naojure.CallbackWrapper.
@@ -153,9 +153,9 @@
   (do
 ;;    (println "event-dispatcher" event)
     (doseq [cb (:callbacks @event-state)] (cb event value))
-    (go (doseq [ch (:channels @event-state)] (>! ch [ event value])))))
+    (go (doseq [ch (:channels @event-state)] (>! ch [event value])))))
 
-(defn- callback->channel
+(defn callback->channel
   "Sends value on channel when function called"
   [ch]
   (fn [v] (put! ch v)))
