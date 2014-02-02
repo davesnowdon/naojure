@@ -112,6 +112,14 @@
      (.call (get-proxy robot proxy-sym) operation
             (into-array Object params))))
 
+(defn post-service
+  "Call an operation asynchronously on a service"
+  ([robot proxy-sym operation]
+     (.post (get-proxy robot proxy-sym) operation
+            (into-array Object [])))
+  ([robot proxy-sym operation params]
+     (.post (get-proxy robot proxy-sym) operation
+            (into-array Object params))))
 
 ;; event handling
 (defn- event-dispatcher
@@ -220,17 +228,23 @@
 (defn get-installed-behaviours
   "Return list of behaviours installed on robot"
   [robot]
-  (call-service robot :behaviour-manager "getInstalledBehaviors" ))
+  (->
+   (call-service robot :behaviour-manager "getInstalledBehaviors" )
+   (.get)))
 
 (defn get-running-behaviours
   "Get list of running behaviours"
   [robot]
-  (call-service robot :behaviour-manager "getRunningBehaviors"))
+  (->
+   (call-service robot :behaviour-manager "getRunningBehaviors")
+   (.get)))
 
 (defn get-default-behaviours
   "Get list of default behaviours (behaviours set to run automatically)"
   [robot]
-  (call-service robot :behaviour-manager "getDefaultBehaviors" ))
+  (->
+   (call-service robot :behaviour-manager "getDefaultBehaviors" )
+   (.get)))
 
 (defn add-default-behaviour
   "Make the named behaviour auto run on robot boot"
@@ -250,12 +264,18 @@
 (defn behaviour-present
   "Is the named behaviour present?"
   [robot behaviour-name]
-  (call-service robot :behaviour-manager "isBehaviorPresent" [behaviour-name]))
+  (->
+   (call-service robot :behaviour-manager "isBehaviorPresent"
+                 [behaviour-name])
+   (.get)))
 
 (defn behaviour-running
   "Is the named behaviour running"
   [robot behaviour-name]
-  (call-service robot :behaviour-manager "isBehaviorRunning"  [behaviour-name]))
+  (->
+   (call-service robot :behaviour-manager "isBehaviorRunning"
+                 [behaviour-name])
+   (.get)))
 
 ; memory
 (defn get-memory-keys
@@ -377,13 +397,16 @@
   [robot x y theta]
   (call-service robot :motion "moveTo" [x y theta]))
 
-(defn get-joint-angles
+(defn- get-joint-angles-internal
   "Return a map of the current joint angles for a robot"
-  [robot]
-  (-> (call-service robot :motion "getAngles"
-                    ["Body" Boolean/TRUE])
+  [robot useSensors]
+  (->> (call-service robot :motion "getAngles" ["Body" useSensors])
       (.get)
       (zipmap joint-names)))
+
+(defn get-joint-angles
+  ([robot] (get-joint-angles-internal robot Boolean/TRUE))
+  ([robot useSensors] (get-joint-angles-internal useSensors)))
 
 (defn get-body-names
   "Return names of joints in the specified chain"
@@ -391,6 +414,26 @@
   (->
    (call-service robot :motion "getBodyNames"  [name])
    (.get)))
+
+(defn get-joint-limits
+  "Get the minAngle (rad), maxAngle (rad), maxVelocity (rad.s-1) and maxTorque (N.m). for a given joint or actuator in the body."
+  [robot]
+  (->>
+   (call-service robot :motion "getLimits" ["Body"])
+   (.get)
+   (zipmap joint-names)))
+
+(defn save-joint-limits
+  "Get joint limit information and save it in robot structure"
+  [robot]
+  (assoc robot :joint-limits (get-joint-limits robot)))
+
+(defn load-joint-limits
+  "Get joint limits from robot map or retrieve them from NAOqi"
+  [robot]
+  (if-let [limits (:joint-limits robot)]
+    limits
+    (get-joint-limits robot)))
 
 ;; broken - can't construct variant holding array of values
 (defn set-joint-angles
@@ -460,97 +503,86 @@
   (call-service robot :tts "setVolume" [(float vol)]))
 
 ;; motion
-(defn- concat-joints
-  [a b]
-  (let [{an :names av :values} a
-        {bn :names bv :values} b]
-    {:names (concat an bn) :values (concat av bv)}))
+(defn- combine-joint-fns
+  [params & fns]
+  {:joints (->> fns
+                (map #(:joints ( % params)))
+                (apply merge))})
 
 (defn- arms_left_forward [params]
   (let [angle1 (get params 0 0)
         angle2 (get params 1 0)]
-    {:joints {:names [ "LShoulderPitch" "LShoulderRoll"]
-              :values [ (- angle1) angle2]}}))
+    {:joints {"LShoulderPitch" (- angle1)
+              "LShoulderRoll" angle2}}))
 
 (defn- arms_right_forward [params]
   (let [angle1 (get params 0 0)
         angle2 (get params 1 0)]
-    {:joints {:names [ "RShoulderPitch"  "RShoulderRoll"]
-              :values [ (- angle1) (- angle2)]}}))
+    {:joints {"RShoulderPitch" (- angle1)
+              "RShoulderRoll" (- angle2)}}))
 
 (defn- arms_forward [params]
-  (concat-joints
-   (:joints (arms_left_forward params))
-   (:joints (arms_right_forward params))))
-
+  (combine-joint-fns params arms_left_forward arms_right_forward))
 
 (defn- arms_left_out [params]
   (let [angle1 (get params 0 0)
         angle2 (get params 1 0)]
-    {:joints {:names ["LShoulderPitch" "LShoulderRoll"]
-              :values [(- angle1) (+ 90 angle2)]}}))
+    {:joints {"LShoulderPitch" (- angle1)
+              "LShoulderRoll" (+ 90 angle2)}}))
 
 (defn- arms_right_out [params]
   (let [angle1 (get params 0 0)
         angle2 (get params 1 0)]
-    {:joints {:names ["RShoulderPitch"  "RShoulderRoll"]
-              :values [ (- angle1) (- -90 angle2)]}}))
+    {:joints {"RShoulderPitch" (- angle1)
+              "RShoulderRoll" (- -90 angle2)}}))
 
 (defn- arms_out [params]
-  (concat-joints
-   (:joints (arms_left_out params))
-   (:joints (arms_right_out params))))
+  (combine-joint-fns params arms_left_out arms_right_out))
 
 (defn- arms_left_up [params]
   (let [angle1 (get params 0 0)
         angle2 (get params 1 0)]
-    {:joints {:names ["LShoulderPitch" "LShoulderRoll"]
-              :values [(- -90 angle1) angle2]}}))
+    {:joints {"LShoulderPitch" (- -90 angle1)
+              "LShoulderRoll" angle2}}))
 
 (defn- arms_right_up [params]
   (let [angle1 (get params 0 0)
         angle2 (get params 1 0)]
-    {:joints {:names ["RShoulderPitch"  "RShoulderRoll"]
-              :values [(- -90 angle1) (- angle2)]}}))
+    {:joints {"RShoulderPitch" (- -90 angle1)
+              "RShoulderRoll" (- angle2)}}))
 
 (defn- arms_up [params]
-  (concat-joints
-   (:joints (arms_left_up params))
-   (:joints (arms_right_up params))))
+  (combine-joint-fns params arms_left_up arms_right_up))
 
 (defn- arms_left_down [params]
   (let [angle1 (get params 0 0)
         angle2 (get params 1 0)]
-    {:joints {:names ["LShoulderPitch" "LShoulderRoll"]
-              :values [ (- 90 angle1) angle2]}}))
+    {:joints {"LShoulderPitch" (- 90 angle1)
+              "LShoulderRoll" angle2}}))
 
 (defn- arms_right_down [params]
   (let [angle1 (get params 0 0)
         angle2 (get params 1 0)]
-    {:joints {:names ["RShoulderPitch"  "RShoulderRoll"]
-              :values [ (- 90 angle1) (- angle2)]}}))
+    {:joints {"RShoulderPitch" (- 90 angle1)
+              "RShoulderRoll" (- angle2)}}))
 
 (defn- arms_down [params]
-  (concat-joints
-   (:joints (arms_left_down params))
-   (:joints (arms_right_down params))))
+  (combine-joint-fns params arms_left_down arms_right_down))
 
 (defn- arms_left_back [params]
   (let [angle1 (get params 0 0)
         angle2 (get params 1 0)]
-    {:joints {:names ["LShoulderPitch" "LShoulderRoll"]
-              :values [ (- 119.5 angle1) angle2]}}))
+    {:joints {"LShoulderPitch" (- 119.5 angle1)
+              "LShoulderRoll" angle2}}))
 
 (defn- arms_right_back [params]
   (let [angle1 (get params 0 0)
         angle2 (get params 1 0)]
-    {:joints {:names ["RShoulderPitch"  "RShoulderRoll"]
-              :values [ (- 119.5 angle1) (- angle2)]}}))
+    {:joints {"RShoulderPitch" (- 119.5 angle1)
+              "RShoulderRoll" (- angle2)}}))
 
 (defn- arms_back [params]
-  (concat-joints
-   (:joints (arms_left_back params))
-   (:joints (arms_right_back params))))
+  (combine-joint-fns params arms_left_back arms_right_back))
 
 (defn arms
   [action & params]
@@ -576,20 +608,49 @@
   [actions]
   (->> actions
        (map :joints)
-       (filter identity)))
+       (filter identity)
+       (apply merge)))
 
-(defn do-joints
-  "Make action for joint changes if any"
-  [joint-lists duration]
-  (if-let [{:keys [names values]}
-           (cond
-            (> 1 (count joints)) (reduce concat_joints joints)
-            (= 1 (count joints)) joints)]
-    ))
+(defn- clip
+  [value min max]
+  (cond
+   (> value max) max
+   (< value min) min
+   :else value))
+
+(defn- compute-joint-speed
+  "Compute fraction of max speed for joint movement in radians"
+  [execution-time-seconds cur-pos-rad desired-pos-rad limits]
+  (let [max-change (limits 2)
+        desired-change (Math/abs (- cur-pos-rad desired-pos-rad))
+        speed (/ desired-change (* max-change execution-time-seconds))]
+    (clip speed 0.01 1.0)))
+
+(defn- motion-task
+  [robot joint-name joint-pos-deg execution-time-seconds cur-joints limits]
+  (let [pos-rad (Math/toRadians joint-pos-deg)
+        speed-fraction (compute-joint-speed execution-time-seconds
+                                            (cur-joints joint-name)
+                                            pos-rad
+                                            (limits joint-name))]
+    (call-service robot :motion "angleInterpolationWithSpeed"
+                  [joint-name
+                   (into-array Object [(Float. pos-rad)])
+                   (Float. speed-fraction)])))
+
+(defn- do-joints
+  "Takes a map of joint changes and a duration and builds a motion task for each joint with the appropriate speed"
+  [robot duration joint-changes]
+  (if (seq joint-changes)
+    (let [cur-joints (get-joint-angles-internal robot Boolean/FALSE)
+          limits (load-joint-limits robot)]
+      (map (fn [[j v]] (motion-task robot j v duration cur-joints limits))
+           joint-changes))))
 
 ;; TODO make the duration and channel params optional
 (defn donao
   "Accepts a number of parameters specifying robot actions and executes them"
   [robot duration chan & actions]
-  (let [joint-changes (only-joint-actions actions)]
+  (let [joint-changes (only-joint-actions actions)
+        joint-tasks (do-joints robot duration joint-changes)]
     ))
