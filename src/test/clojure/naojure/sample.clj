@@ -2,7 +2,8 @@
   (:require [naojure.core :as nao :refer []]))
 
 (require '[naojure.core :as nao]
-         '[clojure.core.async :as async :refer [<! >! timeout chan alt! go]])
+         '[clojure.core.async :as async :refer [<! >! timeout chan alt! go]]
+         '[clojure.pprint :refer [pprint]])
 
 ;; examples of how we'd like to control NAO with clojure
 
@@ -11,7 +12,9 @@
 
 
 ;; update with IP address
-(def robot (nao/make-robot "192.168.0.71"))
+(def robot (nao/make-robot "192.168.0.71" 9559 [:motion :tts]))
+
+(def robot (save-joint-limits robot))
 
 (nao/say robot "Hello clojure")
 
@@ -64,3 +67,6 @@ variants
 
 (def exterminate "file://somewhere in nao filesystem")
 - get exterminate sound sample
+
+(defn print-methods [o]
+  (-> o (.getClass) (.getDeclaredMethods) (pprint)))
