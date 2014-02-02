@@ -1,6 +1,6 @@
 (ns naojure.core
   (:require [clojure.core.async :as async
-             :refer [<! >! timeout chan alt! go]]))
+             :refer [<! >! timeout chan alt! put! go]]))
 
 (def proxy-names {
                     :audio-player "ALAudioPlayer"
@@ -103,23 +103,48 @@
   (let [p (proxy robot)]
     (if (nil? p) (make-proxy robot proxy) p)))
 
+(defn- future-callback-wrapper
+  ([future success]
+     (.addCallback future
+                     (com.davesnowdon.naojure.CallbackWrapper.
+                      success)
+                     (into-array Object [])))
+
+  ([future success failure]
+     (.addCallback future
+                     (com.davesnowdon.naojure.CallbackWrapper.
+                      success failure)
+                     (into-array Object [])))
+
+  ([future success failure complete]
+     (.addCallback future
+                   (com.davesnowdon.naojure.CallbackWrapper.
+                    success failure complete)
+                   (into-array Object [])))
+  )
+
 (defn call-service
   "Call an operation on a service"
   ([robot proxy-sym operation]
      (.call (get-proxy robot proxy-sym) operation
             (into-array Object [])))
+
   ([robot proxy-sym operation params]
      (.call (get-proxy robot proxy-sym) operation
-            (into-array Object params))))
+            (into-array Object params)))
 
-(defn post-service
-  "Call an operation asynchronously on a service"
-  ([robot proxy-sym operation]
-     (.post (get-proxy robot proxy-sym) operation
-            (into-array Object [])))
-  ([robot proxy-sym operation params]
-     (.post (get-proxy robot proxy-sym) operation
-            (into-array Object params))))
+  ([robot proxy-sym operation params success-fn]
+     (-> (call-service robot proxy-sym operation params)
+         (future-callback-wrapper success-fn)))
+
+  ([robot proxy-sym operation params success-fn failure-fn]
+     (-> (call-service robot proxy-sym operation params)
+         (future-callback-wrapper success-fn failure-fn)))
+
+  ([robot proxy-sym operation params success-fn failure-fn complete-fn]
+     (-> (call-service robot proxy-sym operation params)
+         (future-callback-wrapper success-fn failure-fn complete-fn)))
+  )
 
 ;; event handling
 (defn- event-dispatcher
@@ -129,6 +154,11 @@
 ;;    (println "event-dispatcher" event)
     (doseq [cb (:callbacks @event-state)] (cb event value))
     (go (doseq [ch (:channels @event-state)] (>! ch [ event value])))))
+
+(defn- callback->channel
+  "Sends value on channel when function called"
+  [ch]
+  (fn [v] (put! ch v)))
 
 (defn- make-event-wrapper
   "Creates a wrapper than QiMessaging can use as a callback and returns a robot with an atom holding the state in its events map"
@@ -256,10 +286,52 @@
   [robot behaviour-name]
   (call-service robot :behaviour-manager "removeDefaultBehavior" [behaviour-name]))
 
-(defn run-behaviour
-  "Run the named behaviour"
+(defn- get-behaviour-future
+  "Return Future for when behaviour will complete"
   [robot behaviour-name]
   (call-service robot :behaviour-manager "runBehavior" [behaviour-name]))
+
+(defmulti run-behaviour (fn [robot behaviour & args]
+                          (cond
+                           (= 0 (count args)) :default
+                           (fn? (first args)) :callback
+                           :else :channel)))
+
+(defmethod run-behaviour :default [robot behaviour]
+  (->
+   (get-behaviour-future robot behaviour)
+   (.get)))
+
+(defmethod run-behaviour :callback
+  ([robot behaviour success]
+     (-> (get-behaviour-future robot behaviour)
+         (future-callback-wrapper success)))
+
+  ([robot behaviour success failure]
+     (-> (get-behaviour-future robot behaviour)
+         (future-callback-wrapper success failure)))
+
+  ([robot behaviour success failure complete]
+     (-> (get-behaviour-future robot behaviour)
+         (future-callback-wrapper success failure complete)))
+  )
+
+(defmethod run-behaviour :channel
+  ([robot behaviour success]
+     (run-behaviour robot behaviour
+                    (callback->channel success)))
+
+  ([robot behaviour success failure]
+     (run-behaviour robot behaviour
+                    (callback->channel success)
+                    (callback->channel failure)))
+
+  ([robot behaviour success failure complete]
+     (run-behaviour robot behaviour
+                    (callback->channel success)
+                    (callback->channel failure)
+                    (callback->channel complete)))
+  )
 
 (defn behaviour-present
   "Is the named behaviour present?"

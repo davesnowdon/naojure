@@ -30,6 +30,11 @@
 
 (go (while true (println "Right Bumper" (<! ch1))))
 
+(nao/run-behaviour robot "diagnostic" ch1)
+(nao/run-behaviour robot "dsnowdon-hello" ch1)
+(nao/run-behaviour robot "dsnowdon-happy" ch1)
+(nao/run-behaviour robot "dsnowdon-angry" ch1)
+(nao/run-behaviour robot "dsnowdon-scared" ch1)
 
 ;; complete movement in default time
 (nao/donao
