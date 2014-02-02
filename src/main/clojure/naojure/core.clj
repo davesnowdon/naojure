@@ -626,6 +626,7 @@
         speed (/ desired-change (* max-change execution-time-seconds))]
     (clip speed 0.01 1.0)))
 
+;; TODO needs to return futures we can use to check when task completes
 (defn- motion-task
   [robot joint-name joint-pos-deg execution-time-seconds cur-joints limits]
   (let [pos-rad (Math/toRadians joint-pos-deg)
@@ -647,7 +648,9 @@
       (map (fn [[j v]] (motion-task robot j v duration cur-joints limits))
            joint-changes))))
 
+;; ability to use channel or callback on completion
 ;; TODO make the duration and channel params optional
+;; TODO handle tasks other than motion
 (defn donao
   "Accepts a number of parameters specifying robot actions and executes them"
   [robot duration chan & actions]
