@@ -708,7 +708,7 @@
                                             (limits joint-name))]
     (call-service robot :motion "angleInterpolationWithSpeed"
                   [joint-name
-                   (into-array Object [(Float. pos-rad)])
+                   (list (Float. pos-rad))
                    (Float. speed-fraction)])))
 
 (defn- do-joints
@@ -720,12 +720,23 @@
       (map (fn [[j v]] (motion-task robot j v duration cur-joints limits))
            joint-changes))))
 
-;; ability to use channel or callback on completion
-;; TODO make the duration and channel params optional
+(defn-  parse-args
+  "Parse an argument list and separate options from other params"
+  [args]
+  (loop [options {} params args]
+    (if (seq params)
+      (let [h (first params) t (rest params)]
+        (if (keyword h)
+          (recur (assoc options h (first t)) (rest t))
+          [options params]))
+      [options params])))
+
+;; TODO ability to use channel or callback on completion
 ;; TODO handle tasks other than motion
 (defn donao
-  "Accepts a number of parameters specifying robot actions and executes them"
-  [robot duration chan & actions]
-  (let [joint-changes (only-joint-actions actions)
+  "Accepts a number of parameters specifying robot actions and executes them. Options can be specified by preceding them with keywords before the list of actions. For example (donao :duration 1 :channel 2 ...)"
+  [robot & args]
+  (let [[options actions] (parse-args args)
+        joint-changes (only-joint-actions actions)
         joint-tasks (do-joints robot duration joint-changes)]
     ))

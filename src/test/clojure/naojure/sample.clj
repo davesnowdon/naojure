@@ -43,12 +43,12 @@
  (hands :open))
 
 ;; complete movement in 0.1 second
-(nao/do 0.1
+(nao/do :duration 0.1
           (arms :out)
           (hands :left_open)
           (hands :right_close))
 
-(nao/do chan
+(nao/do :channel chan
  (arms :out )
  (hands :open)
  (leds :white))
