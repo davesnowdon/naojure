@@ -693,7 +693,7 @@
 (defn- compute-joint-speed
   "Compute fraction of max speed for joint movement in radians"
   [execution-time-seconds cur-pos-rad desired-pos-rad limits]
-  (let [max-change (limits 2)
+  (let [max-change (nth limits 2)
         desired-change (Math/abs (- cur-pos-rad desired-pos-rad))
         speed (/ desired-change (* max-change execution-time-seconds))]
     (clip speed 0.01 1.0)))
@@ -737,6 +737,9 @@
   "Accepts a number of parameters specifying robot actions and executes them. Options can be specified by preceding them with keywords before the list of actions. For example (donao :duration 1 :channel 2 ...)"
   [robot & args]
   (let [[options actions] (parse-args args)
+        duration (:duration options 1.0)
+        callback (:callback options)
+        channel (:channel options)
         joint-changes (only-joint-actions actions)
         joint-tasks (do-joints robot duration joint-changes)]
     ))
