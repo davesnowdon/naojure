@@ -1,6 +1,33 @@
 (ns naojure.motion-calc
   (:require [naojure.util :as util :refer :all]))
 
+;; head
+(defn head-left [angle]
+  {:joints {"HeadYaw" (+ 90.0 angle)}})
+
+(defn head-right [angle]
+  {:joints {"HeadYaw" (- -90.0 angle)}})
+
+(defn head-forward [angle]
+  {:joints {"HeadYaw" angle}})
+
+(defn head-up [angle]
+  {:joints {"HeadPitch" (- -38.0 angle)}})
+
+(defn down-down [angle]
+  {:joints {"HeadPitch" (+ 29 angle)}})
+
+(defn head-centre [angle]
+  {:joints {"HeadPitch" angle}})
+
+(defn head-stiff [ignored]
+  {:stiffness {"Head" 1.0}})
+
+(defn head-relax [ignored]
+  {:stiffness {"Head" 0.0}})
+
+
+;; arms
 (defn arms-left-forward [angle1 angle2]
   {:joints {"LShoulderPitch" (- angle1)
             "LShoulderRoll" angle2}})
@@ -56,6 +83,26 @@
 (defn arms-back [angle1 angle2]
   (combine-joint-fns angle1 angle2 arms-left-back arms-right-back))
 
+(defn arms-left-stiff [& ignored]
+  {:stiffness {"LArm" 1.0}})
+
+(defn arms-right-stiff [& ignored]
+  {:stiffness {"RArm" 1.0}})
+
+(defn arms-stiff [& ignored]
+  (combine-stiffness-fns arms-left-stiff arms-right-stiff))
+
+(defn arms-left-relax [& ignored]
+  {:stiffness {"LArm" 0.0}})
+
+(defn arms-right-relax [& ignored]
+  {:stiffness {"RArm" 0.0}})
+
+(defn arms-relax [& ignored]
+  (combine-stiffness-fns arms-left-relax arms-right-relax))
+
+
+;; elbows
 (defn elbows-left-bent
   [angle1 angle2]
   {:joints {"LElbowRoll" (- -89.0 angle1)}})
@@ -116,6 +163,8 @@
   [angle1 angle2]
   (combine-joint-fns angle1 angle2 elbows-left-turn-in elbows-right-turn-in))
 
+
+;; wrists
 (defn wrists-left-centre
   [angle1 angle2]
   {:joints {"LWristYaw" angle1}})
@@ -152,6 +201,8 @@
   [angle1 angle2]
   (combine-joint-fns angle1 angle2 wrists-left-in wrists-right-in))
 
+
+;; hands
 (defn hands-left-open
   [angle1 angle2]
   {:joints {"LHand" (Math/toDegrees 1.0)}})
@@ -181,6 +232,8 @@
   ;; TODO
   )
 
+
+;; legs
 (defn legs-right-forward
   [angle1 angle2]
   ;; TODO
@@ -212,6 +265,25 @@
   [angle1 angle2]
   {:joints {"RHipPitch" angle1}})
 
+(defn legs-left-stiff  [& ignored]
+  {:stiffness {"LLeg" 1.0}})
+
+(defn legs-right-stiff  [& ignored]
+  {:stiffness {"RLeg" 1.0}})
+
+(defn legs-stiff
+  (combine-stiffness-fns legs-left-stiff legs-right-stiff))
+
+(defn legs-left-relax  [& ignored]
+  {:stiffness {"LLeg" 0.0}})
+
+(defn legs-right-relax  [& ignored]
+  {:stiffness {"RLeg" 0.0}})
+
+(defn legs-relax
+  (combine-stiffness-fns legs-left-stiff legs-right-stiff))
+
+;; knees
 (defn knees-left-up
   [angle1 angle2]
   ;; TODO
@@ -246,6 +318,8 @@
   [angle1 angle2]
   (knees-right-straight angle1 angle2))
 
+
+;; feet
 (defn feet-left-point-toes
   [angle1 angle2]
   {:joints {"LAnklePitch" (+ 52.8 angle1)}})

@@ -577,25 +577,45 @@
   (call-service robot :tts "setVolume" [(float vol)]))
 
 ;; motion
+(defn head
+  [action & params]
+  (let [angle1 (get params 0 0)]
+    (({:left head-left
+       :right head-right
+       :forward head-forward
+       :up head-up
+       :down down-down
+       :centre head-centre
+       :center head-centre
+       :stiff head-stiff
+       :relax head-relax
+       } action) angle1)))
+
 (defn arms
   [action & params]
   (let [angle1 (get params 0 0)
         angle2 (get params 1 0)]
     (({:forward arms-forward
-        :left-forward arms-left-forward
-        :right-forward arms-right-forward
-        :out arms-out
-        :left-out arms-left-out
-        :right-out arms-right-out
-        :up arms-up
-        :left-up arms-left-up
-        :right-up arms-right-up
-        :down arms-down
-        :left-down arms-left-down
-        :right-down arms-right-down
-        :back arms-back
-        :left-back arms-left-back
-        :right-back arms-right-back
+       :left-forward arms-left-forward
+       :right-forward arms-right-forward
+       :out arms-out
+       :left-out arms-left-out
+       :right-out arms-right-out
+       :up arms-up
+       :left-up arms-left-up
+       :right-up arms-right-up
+       :down arms-down
+       :left-down arms-left-down
+       :right-down arms-right-down
+       :back arms-back
+       :left-back arms-left-back
+       :right-back arms-right-back
+       :left-stiff arms-left-stiff
+       :right-stiff arms-right-stiff
+       :stiff arms-stiff
+       :left-relax arms-left-relax
+       :right-relax arms-right-relax
+       :relax arms-relax
        } action) angle1 angle2)))
 
 (defn elbows
@@ -624,8 +644,11 @@
   (let [angle1 (get params 0 0)
         angle2 (get params 1 0)]
     (({:left-centre wrists-left-centre
+       :left-center wrists-left-centre
        :right-centre wrists-right-centre
+       :right-center wrists-right-centre
        :centre wrists-centre
+       :center wrists-centre
        :left-out wrists-left-out
        :right-out wrists-right-out
        :out wrists-out
@@ -660,6 +683,12 @@
        :right-down legs-right-down
        :left-straight legs-left-straight
        :right-straight legs-right-straight
+       :left-stiff legs-left-stiff
+       :right-stiff legs-right-stiff
+       :stiff legs-stiff
+       :left-relax legs-left-relax
+       :right-relax legs-right-relax
+       :relax legs-relax
        } action) angle1 angle2)))
 
 (defn knees
@@ -689,8 +718,11 @@
        :right-turn-in feet-right-turn-in
        :turn-in feet-turn-in
        :left-centre feet-left-centre
+       :left-center feet-left-centre
        :right-centre feet-right-centre
+       :right-center feet-right-centre
        :centre feet-centre
+       :center feet-centre
        } action) angle1 angle2)))
 
 (defn- only-joint-actions
