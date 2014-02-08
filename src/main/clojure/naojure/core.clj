@@ -2,7 +2,7 @@
   (:require [clojure.core.async :as async
              :refer [<! >! timeout chan alt! put! go]]
             [naojure.util :refer :all]
-            [naojure.motion_calc :refer :all]))
+            [naojure.motion-calc :refer :all]))
 
 (def proxy-names {
                     :audio-player "ALAudioPlayer"
@@ -581,69 +581,116 @@
   [action & params]
   (let [angle1 (get params 0 0)
         angle2 (get params 1 0)]
-    (({:forward arms_forward
-        :left_forward arms_left_forward
-        :right_forward arms_right_forward
-        :out arms_out
-        :left_out arms_left_out
-        :right_out arms_right_out
-        :up arms_up
-        :left_up arms_left_up
-        :right_up arms_right_up
-        :down arms_down
-        :left_down arms_left_down
-        :right_down arms_right_down
-        :back arms_back
-        :left_back arms_left_back
-        :right_back arms_right_back
+    (({:forward arms-forward
+        :left-forward arms-left-forward
+        :right-forward arms-right-forward
+        :out arms-out
+        :left-out arms-left-out
+        :right-out arms-right-out
+        :up arms-up
+        :left-up arms-left-up
+        :right-up arms-right-up
+        :down arms-down
+        :left-down arms-left-down
+        :right-down arms-right-down
+        :back arms-back
+        :left-back arms-left-back
+        :right-back arms-right-back
        } action) angle1 angle2)))
 
 (defn elbows
   [action & params]
   (let [angle1 (get params 0 0)
         angle2 (get params 1 0)]
-    (({:left_bent elbows_left_bent
-       :right_bent elbows_right_bent
-       :bent elbows_bent
-       :left_straight elbows_left_straight
-       :right_straight elbows_right_straight
-       :straight elbows_straight
-       :left_turn_up elbows_left_turn_up
-       :right_turn_up elbows_right_turn_up
-       :turn_up elbows_turn_up
-       :left_turn_down elbows_left_turn_down
-       :right_turn_down elbows_right_turn_down
-       :turn_down elbows_turn_down
-       :left_turn_in elbows_left_turn_in
-       :right_turn_in elbows_right_turn_in
-       :turn_in elbows_turn_in
+    (({:left-bent elbows-left-bent
+       :right-bent elbows-right-bent
+       :bent elbows-bent
+       :left-straight elbows-left-straight
+       :right-straight elbows-right-straight
+       :straight elbows-straight
+       :left-turn-up elbows-left-turn-up
+       :right-turn-up elbows-right-turn-up
+       :turn-up elbows-turn-up
+       :left-turn-down elbows-left-turn-down
+       :right-turn-down elbows-right-turn-down
+       :turn-down elbows-turn-down
+       :left-turn-in elbows-left-turn-in
+       :right-turn-in elbows-right-turn-in
+       :turn-in elbows-turn-in
        } action) angle1 angle2)))
 
 (defn wrists
   [action & params]
   (let [angle1 (get params 0 0)
         angle2 (get params 1 0)]
-    (({:left_centre wrists_left_centre
-       :right_centre wrists_right_centre
-       :centre wrists_centre
-       :left_out wrists_left_out
-       :right_out wrists_right_out
-       :out wrists_out
-       :left_in wrists_left_in
-       :right_in wrists_right_in
-       :in wrists_in
+    (({:left-centre wrists-left-centre
+       :right-centre wrists-right-centre
+       :centre wrists-centre
+       :left-out wrists-left-out
+       :right-out wrists-right-out
+       :out wrists-out
+       :left-in wrists-left-in
+       :right-in wrists-right-in
+       :in wrists-in
        } action) angle1 angle2)))
 
 (defn hands
   [action & params]
   (let [angle1 (get params 0 0)
         angle2 (get params 1 0)]
-    (({:left_open hands_left_open
-       :right_open hands_right_open
-       :open hands_open
-       :left_close hands_left_close
-       :right_close hands_right_close
-       :close hands_close
+    (({:left-open hands-left-open
+       :right-open hands-right-open
+       :open hands-open
+       :left-close hands-left-close
+       :right-close hands-right-close
+       :close hands-close
+       } action) angle1 angle2)))
+
+(defn legs
+  [action & params]
+  (let [angle1 (get params 0 0)
+        angle2 (get params 1 0)]
+    (({:left-forward legs-left-forward
+       :right-forward legs-right-forward
+       :left-out legs-left-out
+       :right-out legs-right-out
+       :left-up legs-left-up
+       :right-up legs-right-up
+       :left-down legs-left-down
+       :right-down legs-right-down
+       :left-straight legs-left-straight
+       :right-straight legs-right-straight
+       } action) angle1 angle2)))
+
+(defn knees
+  [action & params]
+  (let [angle1 (get params 0 0)
+        angle2 (get params 1 0)]
+    (({:left-up knees-left-up
+       :right-up knees-right-up
+       :left-bent knees-left-bent
+       :right-bent knees-right-bent
+       } action) angle1 angle2)))
+
+(defn feet
+  [action & params]
+  (let [angle1 (get params 0 0)
+        angle2 (get params 1 0)]
+    (({:left-point-toes feet-left-point-toes
+       :right-point-toes feet-right-point-toes
+       :point-toes feet-point-toes
+       :left-raise-toes feet-left-raise-toes
+       :right-raise-toes feet-right-raise-toes
+       :raise-toes feet-raise-toes
+       :left-turn-out feet-left-turn-out
+       :right-turn-out feet-right-turn-out
+       :turn-out feet-turn-out
+       :left-turn-in feet-left-turn-in
+       :right-turn-in feet-right-turn-in
+       :turn-in feet-turn-in
+       :left-centre feet-left-centre
+       :right-centre feet-right-centre
+       :centre feet-centre
        } action) angle1 angle2)))
 
 (defn- only-joint-actions
@@ -710,7 +757,8 @@
   (let [[options actions] (parse-args args)
         duration (:duration options 1.0)
         callback (:callback options)
-        channel (:channel options)
+        wait-chan (:wait-channel options)
+        done-chan (:done-channel options)
         joint-changes (only-joint-actions actions)
         joint-tasks (do-joints robot duration joint-changes)]
     joint-tasks))

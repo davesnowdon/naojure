@@ -1,177 +1,318 @@
-(ns naojure.motion_calc
+(ns naojure.motion-calc
   (:require [naojure.util :as util :refer :all]))
 
-(defn arms_left_forward [angle1 angle2]
+(defn arms-left-forward [angle1 angle2]
   {:joints {"LShoulderPitch" (- angle1)
             "LShoulderRoll" angle2}})
 
-(defn arms_right_forward [angle1 angle2]
+(defn arms-right-forward [angle1 angle2]
   {:joints {"RShoulderPitch" (- angle1)
             "RShoulderRoll" (- angle2)}})
 
-(defn arms_forward [angle1 angle2]
-  (combine-joint-fns angle1 angle2 arms_left_forward arms_right_forward))
+(defn arms-forward [angle1 angle2]
+  (combine-joint-fns angle1 angle2 arms-left-forward arms-right-forward))
 
-(defn arms_left_out [angle1 angle2]
+(defn arms-left-out [angle1 angle2]
   {:joints {"LShoulderPitch" (- angle1)
-            "LShoulderRoll" (+ 90 angle2)}})
+            "LShoulderRoll" (+ 90.0 angle2)}})
 
-(defn arms_right_out [angle1 angle2]
+(defn arms-right-out [angle1 angle2]
   {:joints {"RShoulderPitch" (- angle1)
-            "RShoulderRoll" (- -90 angle2)}})
+            "RShoulderRoll" (- -90.0 angle2)}})
 
-(defn arms_out [angle1 angle2]
-  (combine-joint-fns angle1 angle2 arms_left_out arms_right_out))
+(defn arms-out [angle1 angle2]
+  (combine-joint-fns angle1 angle2 arms-left-out arms-right-out))
 
-(defn arms_left_up [angle1 angle2]
-  {:joints {"LShoulderPitch" (- -90 angle1)
+(defn arms-left-up [angle1 angle2]
+  {:joints {"LShoulderPitch" (- -90.0 angle1)
             "LShoulderRoll" angle2}})
 
-(defn arms_right_up [angle1 angle2]
-  {:joints {"RShoulderPitch" (- -90 angle1)
+(defn arms-right-up [angle1 angle2]
+  {:joints {"RShoulderPitch" (- -90.0 angle1)
             "RShoulderRoll" (- angle2)}})
 
-(defn arms_up [angle1 angle2]
-  (combine-joint-fns angle1 angle2 arms_left_up arms_right_up))
+(defn arms-up [angle1 angle2]
+  (combine-joint-fns angle1 angle2 arms-left-up arms-right-up))
 
-(defn arms_left_down [angle1 angle2]
-  {:joints {"LShoulderPitch" (- 90 angle1)
+(defn arms-left-down [angle1 angle2]
+  {:joints {"LShoulderPitch" (- 90.0 angle1)
             "LShoulderRoll" angle2}})
 
-(defn arms_right_down [angle1 angle2]
-  {:joints {"RShoulderPitch" (- 90 angle1)
+(defn arms-right-down [angle1 angle2]
+  {:joints {"RShoulderPitch" (- 90.0 angle1)
             "RShoulderRoll" (- angle2)}})
 
-(defn arms_down [angle1 angle2]
-  (combine-joint-fns angle1 angle2 arms_left_down arms_right_down))
+(defn arms-down [angle1 angle2]
+  (combine-joint-fns angle1 angle2 arms-left-down arms-right-down))
 
-(defn arms_left_back [angle1 angle2]
+(defn arms-left-back [angle1 angle2]
   {:joints {"LShoulderPitch" (- 119.5 angle1)
             "LShoulderRoll" angle2}})
 
-(defn arms_right_back [angle1 angle2]
+(defn arms-right-back [angle1 angle2]
   {:joints {"RShoulderPitch" (- 119.5 angle1)
             "RShoulderRoll" (- angle2)}})
 
-(defn arms_back [angle1 angle2]
-  (combine-joint-fns angle1 angle2 arms_left_back arms_right_back))
+(defn arms-back [angle1 angle2]
+  (combine-joint-fns angle1 angle2 arms-left-back arms-right-back))
 
-(defn elbows_left_bent
+(defn elbows-left-bent
   [angle1 angle2]
-  {:joints {"LElbowRoll" (- -89 angle1)}})
+  {:joints {"LElbowRoll" (- -89.0 angle1)}})
 
-(defn elbows_right_bent
+(defn elbows-right-bent
   [angle1 angle2]
-  {:joints {"RElbowRoll" (+ 89 angle1)}})
+  {:joints {"RElbowRoll" (+ 89.0 angle1)}})
 
-(defn elbows_bent
+(defn elbows-bent
   [angle1 angle2]
-  (combine-joint-fns angle1 angle2 elbows_left_bent elbows_right_bent))
+  (combine-joint-fns angle1 angle2 elbows-left-bent elbows-right-bent))
 
-(defn elbows_left_straight
+(defn elbows-left-straight
   [angle1 angle2]
   {:joints {"LElbowRoll" (+ 0.5 angle1)}})
 
-(defn elbows_right_straight
+(defn elbows-right-straight
   [angle1 angle2]
   {:joints {"RElbowRoll" (- 0.5 angle1)}})
 
-(defn elbows_straight
+(defn elbows-straight
   [angle1 angle2]
-  (combine-joint-fns angle1 angle2 elbows_left_straight elbows_right_straight))
+  (combine-joint-fns angle1 angle2 elbows-left-straight elbows-right-straight))
 
-(defn elbows_left_turn_up
+(defn elbows-left-turn-up
   [angle1 angle2]
-  {:joints {"LElbowYaw" (- -90 angle1)}})
+  {:joints {"LElbowYaw" (- -90.0 angle1)}})
 
-(defn elbows_right_turn_up
+(defn elbows-right-turn-up
   [angle1 angle2]
-  {:joints {"RElbowYaw" (+ 90 angle1)}})
+  {:joints {"RElbowYaw" (+ 90.0 angle1)}})
 
-(defn elbows_turn_up
+(defn elbows-turn-up
   [angle1 angle2]
-  (combine-joint-fns angle1 angle2 elbows_left_turn_up elbows_right_turn_up))
+  (combine-joint-fns angle1 angle2 elbows-left-turn-up elbows-right-turn-up))
 
-(defn elbows_left_turn_down
+(defn elbows-left-turn-down
   [angle1 angle2]
-  {:joints {"LElbowYaw" (+ 90 angle1)}})
+  {:joints {"LElbowYaw" (+ 90.0 angle1)}})
 
-(defn elbows_right_turn_down
+(defn elbows-right-turn-down
   [angle1 angle2]
-  {:joints {"RElbowYaw" (- -90 angle1)}})
+  {:joints {"RElbowYaw" (- -90.0 angle1)}})
 
-(defn elbows_turn_down
+(defn elbows-turn-down
   [angle1 angle2]
-  (combine-joint-fns angle1 angle2 elbows_left_turn_down elbows_right_turn_down))
+  (combine-joint-fns angle1 angle2 elbows-left-turn-down elbows-right-turn-down))
 
-(defn elbows_left_turn_in
+(defn elbows-left-turn-in
   [angle1 angle2]
   {:joints {"LElbowYaw" angle1}})
 
-(defn elbows_right_turn_in
+(defn elbows-right-turn-in
   [angle1 angle2]
   {:joints {"RElbowYaw" (- angle1)}})
 
-(defn elbows_turn_in
+(defn elbows-turn-in
   [angle1 angle2]
-  (combine-joint-fns angle1 angle2 elbows_left_turn_in elbows_right_turn_in))
+  (combine-joint-fns angle1 angle2 elbows-left-turn-in elbows-right-turn-in))
 
-(defn wrists_left_centre
+(defn wrists-left-centre
   [angle1 angle2]
   {:joints {"LWristYaw" angle1}})
 
-(defn wrists_right_centre
+(defn wrists-right-centre
   [angle1 angle2]
   {:joints {"RWristYaw" (- angle1)}})
 
-(defn wrists_centre
+(defn wrists-centre
   [angle1 angle2]
-  (combine-joint-fns angle1 angle2 wrists_left_centre wrists_right_centre))
+  (combine-joint-fns angle1 angle2 wrists-left-centre wrists-right-centre))
 
-(defn wrists_left_out
+(defn wrists-left-out
   [angle1 angle2]
-  {:joints {"LWristYaw" (+ 90 angle1)}})
+  {:joints {"LWristYaw" (+ 90.0 angle1)}})
 
-(defn wrists_right_out
+(defn wrists-right-out
   [angle1 angle2]
-  {:joints {"RWristYaw" (- -90 angle1)}})
+  {:joints {"RWristYaw" (- -90.0 angle1)}})
 
-(defn wrists_out
+(defn wrists-out
   [angle1 angle2]
-  (combine-joint-fns angle1 angle2 wrists_left_out wrists_right_out))
+  (combine-joint-fns angle1 angle2 wrists-left-out wrists-right-out))
 
-(defn wrists_left_in
+(defn wrists-left-in
   [angle1 angle2]
-  {:joints {"LWristYaw" (- -90 angle1)}})
+  {:joints {"LWristYaw" (- -90.0 angle1)}})
 
-(defn wrists_right_in
+(defn wrists-right-in
   [angle1 angle2]
-  {:joints {"RWristYaw" (+ 90 angle1)}})
+  {:joints {"RWristYaw" (+ 90.0 angle1)}})
 
-(defn wrists_in
+(defn wrists-in
   [angle1 angle2]
-  (combine-joint-fns angle1 angle2 wrists_left_in wrists_right_in))
+  (combine-joint-fns angle1 angle2 wrists-left-in wrists-right-in))
 
-(defn hands_left_open
+(defn hands-left-open
   [angle1 angle2]
   {:joints {"LHand" (Math/toDegrees 1.0)}})
 
-(defn hands_right_open
+(defn hands-right-open
   [angle1 angle2]
   {:joints {"RHand" (Math/toDegrees 1.0)}})
 
-(defn hands_open
+(defn hands-open
   [angle1 angle2]
-  (combine-joint-fns angle1 angle2 hands_left_open hands_right_open))
+  (combine-joint-fns angle1 angle2 hands-left-open hands-right-open))
 
-(defn hands_left_close
+(defn hands-left-close
   [angle1 angle2]
   {:joints {"LHand" (Math/toDegrees 0.0)}})
 
-(defn hands_right_close
+(defn hands-right-close
   [angle1 angle2]
   {:joints {"RHand" (Math/toDegrees 0.0)}})
 
-(defn hands_close
+(defn hands-close
   [angle1 angle2]
-  (combine-joint-fns angle1 angle2 hands_left_close hands_right_close))
+  (combine-joint-fns angle1 angle2 hands-left-close hands-right-close))
+
+(defn legs-left-forward
+  [angle1 angle2]
+  ;; TODO
+  )
+
+(defn legs-right-forward
+  [angle1 angle2]
+  ;; TODO
+  )
+
+(defn legs-left-out
+  [angle1 angle2]
+  ;; TODO
+  )
+
+(defn legs-right-out
+  [angle1 angle2]
+  ;; TODO
+  )
+
+(defn legs-left-up
+  [angle1 angle2]
+  {:joints {"LHipPitch" (- -90.0 angle1)}})
+
+(defn legs-right-up
+  [angle1 angle2]
+  {:joints {"RHipPitch" (- -90.0 angle1)}})
+
+(defn legs-left-down
+  [angle1 angle2]
+  {:joints {"LHipPitch" angle1}})
+
+(defn legs-right-down
+  [angle1 angle2]
+  {:joints {"RHipPitch" angle1}})
+
+(defn knees-left-up
+  [angle1 angle2]
+  ;; TODO
+  )
+
+(defn knees-right-up
+  [angle1 angle2]
+  ;; TODO
+  )
+
+(defn knees-left-bent
+  [angle1 angle2]
+  {:joints {"LKneePitch" (+ 90.0 angle1)}})
+
+(defn knees-right-bent
+  [angle1 angle2]
+  {:joints {"RKneePitch" (+ 90.0 angle1)}})
+
+(defn knees-left-straight
+  [angle1 angle2]
+  {:joints {"LKneePitch" (- angle1)}})
+
+(defn knees-right-straight
+  [angle1 angle2]
+  {:joints {"RKneePitch" (- angle1)}})
+
+(defn legs-left-straight
+  [angle1 angle2]
+  (knees-left-straight angle1 angle2))
+
+(defn legs-right-straight
+  [angle1 angle2]
+  (knees-right-straight angle1 angle2))
+
+(defn feet-left-point-toes
+  [angle1 angle2]
+  {:joints {"LAnklePitch" (+ 52.8 angle1)}})
+
+(defn feet-right-point-toes
+  [angle1 angle2]
+  {:joints {"RAnklePitch" (+ 52.8 angle1)}})
+
+(defn feet-point-toes
+  [angle1 angle2]
+  (combine-joint-fns angle1 angle2
+                     feet-left-point-toes
+                     feet-right-point-toes))
+
+(defn feet-left-raise-toes
+  [angle1 angle2]
+  {:joints {"LAnklePitch" (- -68.0 angle1)}})
+
+
+(defn feet-right-raise-toes
+  [angle1 angle2]
+  {:joints {"RAnklePitch" (- -68.0 angle1)}})
+
+(defn feet-raise-toes
+  [angle1 angle2]
+  (combine-joint-fns angle1 angle2
+                     feet-left-raise-toes
+                     feet-right-raise-toes))
+
+(defn feet-left-turn-out
+  [angle1 angle2]
+  {:joints {"LAnkleRoll" (+ 22.0 angle1)}})
+
+
+(defn feet-right-turn-out
+  [angle1 angle2]
+  {:joints {"RAnkleRoll" (- -22.0 angle1)}})
+
+
+(defn feet-turn-out
+  [angle1 angle2]
+  (combine-joint-fns angle1 angle2 feet-left-turn-out feet-right-turn-out))
+
+
+(defn feet-left-turn-in
+  [angle1 angle2]
+  {:joints {"LAnkleRoll" (- -22.8 angle1)}})
+
+
+(defn feet-right-turn-in
+  [angle1 angle2]
+  {:joints {"RAnkleRoll" (+ 22.8 angle1)}})
+
+(defn feet-turn-in
+  [angle1 angle2]
+  (combine-joint-fns angle1 angle2 feet-left-turn-in feet-right-turn-in))
+
+(defn feet-left-centre
+  [angle1 angle2]
+  {:joints {"LAnkleRoll" 0.0 "LAnklePitch" 0.0}})
+
+
+(defn feet-right-centre
+  [angle1 angle2]
+  {:joints {"RAnkleRoll" 0.0 "RAnklePitch" 0.0}})
+
+
+(defn feet-centre
+  [angle1 angle2]
+  (combine-joint-fns angle1 angle2 feet-left-centre feet-right-centre))
