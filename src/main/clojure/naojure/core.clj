@@ -1,6 +1,8 @@
 (ns naojure.core
   (:require [clojure.core.async :as async
-             :refer [<! >! timeout chan alt! put! go]]))
+             :refer [<! >! timeout chan alt! put! go]]
+            [naojure.util :refer :all]
+            [naojure.motion_calc :refer :all]))
 
 (def proxy-names {
                     :audio-player "ALAudioPlayer"
@@ -575,105 +577,26 @@
   (call-service robot :tts "setVolume" [(float vol)]))
 
 ;; motion
-(defn- combine-joint-fns
-  [params & fns]
-  {:joints (->> fns
-                (map #(:joints ( % params)))
-                (apply merge))})
-
-(defn- arms_left_forward [params]
-  (let [angle1 (get params 0 0)
-        angle2 (get params 1 0)]
-    {:joints {"LShoulderPitch" (- angle1)
-              "LShoulderRoll" angle2}}))
-
-(defn- arms_right_forward [params]
-  (let [angle1 (get params 0 0)
-        angle2 (get params 1 0)]
-    {:joints {"RShoulderPitch" (- angle1)
-              "RShoulderRoll" (- angle2)}}))
-
-(defn- arms_forward [params]
-  (combine-joint-fns params arms_left_forward arms_right_forward))
-
-(defn- arms_left_out [params]
-  (let [angle1 (get params 0 0)
-        angle2 (get params 1 0)]
-    {:joints {"LShoulderPitch" (- angle1)
-              "LShoulderRoll" (+ 90 angle2)}}))
-
-(defn- arms_right_out [params]
-  (let [angle1 (get params 0 0)
-        angle2 (get params 1 0)]
-    {:joints {"RShoulderPitch" (- angle1)
-              "RShoulderRoll" (- -90 angle2)}}))
-
-(defn- arms_out [params]
-  (combine-joint-fns params arms_left_out arms_right_out))
-
-(defn- arms_left_up [params]
-  (let [angle1 (get params 0 0)
-        angle2 (get params 1 0)]
-    {:joints {"LShoulderPitch" (- -90 angle1)
-              "LShoulderRoll" angle2}}))
-
-(defn- arms_right_up [params]
-  (let [angle1 (get params 0 0)
-        angle2 (get params 1 0)]
-    {:joints {"RShoulderPitch" (- -90 angle1)
-              "RShoulderRoll" (- angle2)}}))
-
-(defn- arms_up [params]
-  (combine-joint-fns params arms_left_up arms_right_up))
-
-(defn- arms_left_down [params]
-  (let [angle1 (get params 0 0)
-        angle2 (get params 1 0)]
-    {:joints {"LShoulderPitch" (- 90 angle1)
-              "LShoulderRoll" angle2}}))
-
-(defn- arms_right_down [params]
-  (let [angle1 (get params 0 0)
-        angle2 (get params 1 0)]
-    {:joints {"RShoulderPitch" (- 90 angle1)
-              "RShoulderRoll" (- angle2)}}))
-
-(defn- arms_down [params]
-  (combine-joint-fns params arms_left_down arms_right_down))
-
-(defn- arms_left_back [params]
-  (let [angle1 (get params 0 0)
-        angle2 (get params 1 0)]
-    {:joints {"LShoulderPitch" (- 119.5 angle1)
-              "LShoulderRoll" angle2}}))
-
-(defn- arms_right_back [params]
-  (let [angle1 (get params 0 0)
-        angle2 (get params 1 0)]
-    {:joints {"RShoulderPitch" (- 119.5 angle1)
-              "RShoulderRoll" (- angle2)}}))
-
-(defn- arms_back [params]
-  (combine-joint-fns params arms_left_back arms_right_back))
-
 (defn arms
   [action & params]
-  (( {:forward arms_forward
-      :left_forward arms_left_forward
-      :right_forward arms_right_forward
-      :out arms_out
-      :left_out arms_left_out
-      :right_out arms_right_out
-      :up arms_up
-      :left_up arms_left_up
-      :right_up arms_right_up
-      :down arms_down
-      :left_down arms_left_down
-      :right_down arms_right_down
-      :back arms_back
-      :left_back arms_left_back
-      :right_back arms_right_back
-      } action) params))
+  (let [angle1 (get params 0 0)
+        angle2 (get params 1 0)]
+    (({:forward arms_forward
+        :left_forward arms_left_forward
+        :right_forward arms_right_forward
+        :out arms_out
+        :left_out arms_left_out
+        :right_out arms_right_out
+        :up arms_up
+        :left_up arms_left_up
+        :right_up arms_right_up
+        :down arms_down
+        :left_down arms_left_down
+        :right_down arms_right_down
+        :back arms_back
+        :left_back arms_left_back
+        :right_back arms_right_back
+       } action) angle1 angle2)))
 
 (defn- only-joint-actions
   "Return only the values of joint actions"
