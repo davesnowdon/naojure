@@ -708,7 +708,7 @@
                                             (limits joint-name))]
     (call-service robot :motion "angleInterpolationWithSpeed"
                   [joint-name
-                   (list (Float. pos-rad))
+                   (java.util.ArrayList. (list (Float. pos-rad)))
                    (Float. speed-fraction)])))
 
 (defn- do-joints
@@ -742,4 +742,4 @@
         channel (:channel options)
         joint-changes (only-joint-actions actions)
         joint-tasks (do-joints robot duration joint-changes)]
-    ))
+    joint-tasks))
