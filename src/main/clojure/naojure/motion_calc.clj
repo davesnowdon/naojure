@@ -271,7 +271,7 @@
 (defn legs-right-stiff  [& ignored]
   {:stiffness {"RLeg" 1.0}})
 
-(defn legs-stiff
+(defn legs-stiff [& ignored]
   (combine-stiffness-fns legs-left-stiff legs-right-stiff))
 
 (defn legs-left-relax  [& ignored]
@@ -280,7 +280,7 @@
 (defn legs-right-relax  [& ignored]
   {:stiffness {"RLeg" 0.0}})
 
-(defn legs-relax
+(defn legs-relax [& ignored]
   (combine-stiffness-fns legs-left-stiff legs-right-stiff))
 
 ;; knees
