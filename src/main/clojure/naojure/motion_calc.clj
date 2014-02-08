@@ -151,3 +151,27 @@
 (defn wrists_in
   [angle1 angle2]
   (combine-joint-fns angle1 angle2 wrists_left_in wrists_right_in))
+
+(defn hands_left_open
+  [angle1 angle2]
+  {:joints {"LHand" (Math/toDegrees 1.0)}})
+
+(defn hands_right_open
+  [angle1 angle2]
+  {:joints {"RHand" (Math/toDegrees 1.0)}})
+
+(defn hands_open
+  [angle1 angle2]
+  (combine-joint-fns angle1 angle2 hands_left_open hands_right_open))
+
+(defn hands_left_close
+  [angle1 angle2]
+  {:joints {"LHand" (Math/toDegrees 0.0)}})
+
+(defn hands_right_close
+  [angle1 angle2]
+  {:joints {"RHand" (Math/toDegrees 0.0)}})
+
+(defn hands_close
+  [angle1 angle2]
+  (combine-joint-fns angle1 angle2 hands_left_close hands_right_close))
