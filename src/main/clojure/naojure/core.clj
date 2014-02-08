@@ -619,6 +619,21 @@
        :turn_in elbows_turn_in
        } action) angle1 angle2)))
 
+(defn wrists
+  [action & params]
+  (let [angle1 (get params 0 0)
+        angle2 (get params 1 0)]
+    (({:left_centre wrists_left_centre
+       :right_centre wrists_right_centre
+       :centre wrists_centre
+       :left_out wrists_left_out
+       :right_out wrists_right_out
+       :out wrists_out
+       :left_in wrists_left_in
+       :right_in wrists_right_in
+       :in wrists_in
+       } action) angle1 angle2)))
+
 (defn- only-joint-actions
   "Return only the values of joint actions"
   [actions]

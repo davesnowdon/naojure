@@ -115,3 +115,39 @@
 (defn elbows_turn_in
   [angle1 angle2]
   (combine-joint-fns angle1 angle2 elbows_left_turn_in elbows_right_turn_in))
+
+(defn wrists_left_centre
+  [angle1 angle2]
+  {:joints {"LWristYaw" angle1}})
+
+(defn wrists_right_centre
+  [angle1 angle2]
+  {:joints {"RWristYaw" (- angle1)}})
+
+(defn wrists_centre
+  [angle1 angle2]
+  (combine-joint-fns angle1 angle2 wrists_left_centre wrists_right_centre))
+
+(defn wrists_left_out
+  [angle1 angle2]
+  {:joints {"LWristYaw" (+ 90 angle1)}})
+
+(defn wrists_right_out
+  [angle1 angle2]
+  {:joints {"RWristYaw" (- -90 angle1)}})
+
+(defn wrists_out
+  [angle1 angle2]
+  (combine-joint-fns angle1 angle2 wrists_left_out wrists_right_out))
+
+(defn wrists_left_in
+  [angle1 angle2]
+  {:joints {"LWristYaw" (- -90 angle1)}})
+
+(defn wrists_right_in
+  [angle1 angle2]
+  {:joints {"RWristYaw" (+ 90 angle1)}})
+
+(defn wrists_in
+  [angle1 angle2]
+  (combine-joint-fns angle1 angle2 wrists_left_in wrists_right_in))
