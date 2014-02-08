@@ -598,6 +598,27 @@
         :right_back arms_right_back
        } action) angle1 angle2)))
 
+(defn elbows
+  [action & params]
+  (let [angle1 (get params 0 0)
+        angle2 (get params 1 0)]
+    (({:left_bent elbows_left_bent
+       :right_bent elbows_right_bent
+       :bent elbows_bent
+       :left_straight elbows_left_straight
+       :right_straight elbows_right_straight
+       :straight elbows_straight
+       :left_turn_up elbows_left_turn_up
+       :right_turn_up elbows_right_turn_up
+       :turn_up elbows_turn_up
+       :left_turn_down elbows_left_turn_down
+       :right_turn_down elbows_right_turn_down
+       :turn_down elbows_turn_down
+       :left_turn_in elbows_left_turn_in
+       :right_turn_in elbows_right_turn_in
+       :turn_in elbows_turn_in
+       } action) angle1 angle2)))
+
 (defn- only-joint-actions
   "Return only the values of joint actions"
   [actions]

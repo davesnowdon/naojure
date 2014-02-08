@@ -55,3 +55,63 @@
 
 (defn arms_back [angle1 angle2]
   (combine-joint-fns angle1 angle2 arms_left_back arms_right_back))
+
+(defn elbows_left_bent
+  [angle1 angle2]
+  {:joints {"LElbowRoll" (- -89 angle1)}})
+
+(defn elbows_right_bent
+  [angle1 angle2]
+  {:joints {"RElbowRoll" (+ 89 angle1)}})
+
+(defn elbows_bent
+  [angle1 angle2]
+  (combine-joint-fns angle1 angle2 elbows_left_bent elbows_right_bent))
+
+(defn elbows_left_straight
+  [angle1 angle2]
+  {:joints {"LElbowRoll" (+ 0.5 angle1)}})
+
+(defn elbows_right_straight
+  [angle1 angle2]
+  {:joints {"RElbowRoll" (- 0.5 angle1)}})
+
+(defn elbows_straight
+  [angle1 angle2]
+  (combine-joint-fns angle1 angle2 elbows_left_straight elbows_right_straight))
+
+(defn elbows_left_turn_up
+  [angle1 angle2]
+  {:joints {"LElbowYaw" (- -90 angle1)}})
+
+(defn elbows_right_turn_up
+  [angle1 angle2]
+  {:joints {"RElbowYaw" (+ 90 angle1)}})
+
+(defn elbows_turn_up
+  [angle1 angle2]
+  (combine-joint-fns angle1 angle2 elbows_left_turn_up elbows_right_turn_up))
+
+(defn elbows_left_turn_down
+  [angle1 angle2]
+  {:joints {"LElbowYaw" (+ 90 angle1)}})
+
+(defn elbows_right_turn_down
+  [angle1 angle2]
+  {:joints {"RElbowYaw" (- -90 angle1)}})
+
+(defn elbows_turn_down
+  [angle1 angle2]
+  (combine-joint-fns angle1 angle2 elbows_left_turn_down elbows_right_turn_down))
+
+(defn elbows_left_turn_in
+  [angle1 angle2]
+  {:joints {"LElbowYaw" angle1}})
+
+(defn elbows_right_turn_in
+  [angle1 angle2]
+  {:joints {"RElbowYaw" (- angle1)}})
+
+(defn elbows_turn_in
+  [angle1 angle2]
+  (combine-joint-fns angle1 angle2 elbows_left_turn_in elbows_right_turn_in))
