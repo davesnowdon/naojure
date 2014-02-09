@@ -1,8 +1,10 @@
 (ns naojure.sample
   (:require [naojure.core :as nao :refer []]))
 
-(require '[naojure.core :as nao]
-         '[clojure.core.async :as async :refer [<! >! timeout chan alt! go]]
+(require '[naojure.core :as nao
+           :refer [head arms elbows wrists hands legs knees feet]]
+         '[clojure.core.async :as async
+           :refer [<! >! timeout chan alt! go]]
          '[clojure.pprint :refer [pprint]])
 
 ;; examples of how we'd like to control NAO with clojure
