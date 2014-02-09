@@ -834,10 +834,6 @@
         stiffness-changes (filter-actions :stiffness actions)
         go-result-chan
         (go
-         (println "stiffness")
-         (pprint stiffness-changes)
-         (println "joints")
-         (pprint joint-changes)
          ;; wait to be triggered
          (if wait-chan
            (let [channels
@@ -846,14 +842,11 @@
                    [wait-chan])]
              (alts! channels :priority true)))
 
-         (println "done waiting")
-
          ;; wait to trigger tasks until they are required
          (let [stiffness-tasks (do-stiffness robot duration
                                              stiffness-changes)
                joint-tasks (do-joints robot duration joint-changes)
                all-tasks (concat stiffness-tasks joint-tasks)]
-           (println "choosing how to signal completion")
            (cond
             ;; send true on done-chan when all tasks done
             (not (nil? done-chan))
