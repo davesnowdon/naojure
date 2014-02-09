@@ -1,8 +1,9 @@
 (ns naojure.core
   (:require [clojure.core.async :as async
-             :refer [<! >! timeout chan alt! put! go]]
+             :refer [<! >! <!! timeout chan alts! alts!! put! go]]
             [naojure.util :refer :all]
-            [naojure.motion-calc :refer :all]))
+            [naojure.motion-calc :refer :all]
+            [clojure.pprint :refer [pprint]]))
 
 (def proxy-names {
                     :audio-player "ALAudioPlayer"
@@ -124,6 +125,14 @@
                     success failure complete)
                    (into-array Object [])))
   )
+
+;; function to use as placeholder in callback wrapper when no
+;; action is required
+(defn- do-nothing [])
+
+(defn future-callback-on-complete
+  [future complete-fn]
+  (future-callback-wrapper future do-nothing do-nothing complete-fn))
 
 (defn call-service
   "Call an operation on a service"
@@ -725,11 +734,11 @@
        :center feet-centre
        } action) angle1 angle2)))
 
-(defn- only-joint-actions
+(defn- filter-actions
   "Return only the values of joint actions"
-  [actions]
+  [selector actions]
   (->> actions
-       (map :joints)
+       (map selector)
        (filter identity)
        (apply merge)))
 
@@ -748,7 +757,6 @@
         speed (/ desired-change (* max-change execution-time-seconds))]
     (clip speed 0.01 1.0)))
 
-;; TODO needs to return futures we can use to check when task completes
 (defn- motion-task
   [robot joint-name joint-pos-deg execution-time-seconds cur-joints limits]
   (let [pos-rad (Math/toRadians joint-pos-deg)
@@ -770,6 +778,18 @@
       (map (fn [[j v]] (motion-task robot j v duration cur-joints limits))
            joint-changes))))
 
+(defn- stiffness-task
+  [robot chain-name stiffness execution-time-seconds]
+  (call-service robot :motion "stiffnessInterpolation"
+                [chain-name (Float. stiffness)
+                 (Float. execution-time-seconds)]))
+
+(defn- do-stiffness
+  "Takes a map of stiffness changes and a duration and builds tasks for"
+  [robot duration stiffness-changes]
+  (if (seq stiffness-changes)
+    (map (fn [[c s]] (stiffness-task c s duration)) stiffness-changes)))
+
 (defn-  parse-args
   "Parse an argument list and separate options from other params"
   [args]
@@ -781,6 +801,22 @@
           [options params]))
       [options params])))
 
+;; returns function that sends value to specified channel after
+;; it has been called the specified number of times
+(defn- put-when-zero
+  [num-calls ch done-val]
+  (let [counter (atom num-calls)]
+    (fn [v] (if (= 0 (swap! counter dec))
+             (put! ch done-val)))))
+
+(defn- put-when-all-complete
+  "Take a sequence of futures and wait for them all to complete"
+  [futures done-chan]
+  (if (seq futures)
+    (let [complete-fn (put-when-zero (count futures) done-chan true)]
+      (dorun (map #(future-callback-on-complete % complete-fn) futures))
+      done-chan)))
+
 ;; TODO ability to use channel or callback on completion
 ;; TODO handle tasks other than motion
 (defn donao
@@ -790,7 +826,49 @@
         duration (:duration options 1.0)
         callback (:callback options)
         wait-chan (:wait-channel options)
+        wait-timeout (:wait-timeout options)
         done-chan (:done-channel options)
-        joint-changes (only-joint-actions actions)
-        joint-tasks (do-joints robot duration joint-changes)]
-    joint-tasks))
+        done-timeout (:done-timeout options)
+        is-blocking (and (nil? done-chan) (nil? callback))
+        joint-changes (filter-actions :joints actions)
+        stiffness-changes (filter-actions :stiffness actions)
+        go-result-chan
+        (go
+         (println "stiffness")
+         (pprint stiffness-changes)
+         (println "joints")
+         (pprint joint-changes)
+         ;; wait to be triggered
+         (if wait-chan
+           (let [channels
+                 (if (wait-timeout)
+                   [wait-chan (timeout wait-timeout)]
+                   [wait-chan])]
+             (alts! channels :priority true)))
+
+         (println "done waiting")
+
+         ;; wait to trigger tasks until they are required
+         (let [stiffness-tasks (do-stiffness robot duration
+                                             stiffness-changes)
+               joint-tasks (do-joints robot duration joint-changes)
+               all-tasks (concat stiffness-tasks joint-tasks)]
+           (println "choosing how to signal completion")
+           (cond
+            ;; send true on done-chan when all tasks done
+            (not (nil? done-chan))
+            (put-when-all-complete all-tasks done-chan)
+
+            ;; invoke callback when all tasks done
+            (not (nil? callback))
+            (do (<! (put-when-all-complete all-tasks (chan)))
+                (callback true))
+
+            ;; wait for all tasks to complete before returning
+            :else
+            (<! (put-when-all-complete all-tasks (chan)))))
+         )]
+    (if is-blocking
+      (if done-timeout
+        (alts!! [go-result-chan (timeout done-timeout)] :priority true)
+        (<!! go-result-chan)))))

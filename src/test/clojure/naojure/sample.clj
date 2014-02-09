@@ -38,17 +38,17 @@
 (nao/run-behaviour robot "dsnowdon-exterminate" ch1)
 
 ;; complete movement in default time
-(nao/donao
+(nao/donao robot
  (arms :out )
  (hands :open))
 
 ;; complete movement in 0.1 second
-(nao/do :duration 0.1
+(nao/do robot :duration 0.1
           (arms :out)
-          (hands :left_open)
-          (hands :right_close))
+          (hands :left-open)
+          (hands :right-close))
 
-(nao/do :channel chan
+(nao/do robot :channel chan
  (arms :out )
  (hands :open)
  (leds :white))
