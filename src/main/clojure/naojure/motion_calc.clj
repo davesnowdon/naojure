@@ -20,10 +20,10 @@
 (defn head-centre [angle]
   {:joints {"HeadPitch" angle}})
 
-(defn head-stiff [ignored]
+(defn head-stiff [_]
   {:stiffness {"Head" 1.0}})
 
-(defn head-relax [ignored]
+(defn head-relax [_]
   {:stiffness {"Head" 0.0}})
 
 
@@ -83,22 +83,22 @@
 (defn arms-back [angle1 angle2]
   (combine-joint-fns angle1 angle2 arms-left-back arms-right-back))
 
-(defn arms-left-stiff [& ignored]
+(defn arms-left-stiff [& _]
   {:stiffness {"LArm" 1.0}})
 
-(defn arms-right-stiff [& ignored]
+(defn arms-right-stiff [& _]
   {:stiffness {"RArm" 1.0}})
 
-(defn arms-stiff [& ignored]
+(defn arms-stiff [& _]
   (combine-stiffness-fns arms-left-stiff arms-right-stiff))
 
-(defn arms-left-relax [& ignored]
+(defn arms-left-relax [& _]
   {:stiffness {"LArm" 0.0}})
 
-(defn arms-right-relax [& ignored]
+(defn arms-right-relax [& _]
   {:stiffness {"RArm" 0.0}})
 
-(defn arms-relax [& ignored]
+(defn arms-relax [& _]
   (combine-stiffness-fns arms-left-relax arms-right-relax))
 
 
@@ -265,22 +265,22 @@
   [angle1 angle2]
   {:joints {"RHipPitch" angle1}})
 
-(defn legs-left-stiff  [& ignored]
+(defn legs-left-stiff  [& _]
   {:stiffness {"LLeg" 1.0}})
 
-(defn legs-right-stiff  [& ignored]
+(defn legs-right-stiff  [& _]
   {:stiffness {"RLeg" 1.0}})
 
-(defn legs-stiff [& ignored]
+(defn legs-stiff [& _]
   (combine-stiffness-fns legs-left-stiff legs-right-stiff))
 
-(defn legs-left-relax  [& ignored]
+(defn legs-left-relax  [& _]
   {:stiffness {"LLeg" 0.0}})
 
-(defn legs-right-relax  [& ignored]
+(defn legs-right-relax  [& _]
   {:stiffness {"RLeg" 0.0}})
 
-(defn legs-relax [& ignored]
+(defn legs-relax [& _]
   (combine-stiffness-fns legs-left-stiff legs-right-stiff))
 
 ;; knees
