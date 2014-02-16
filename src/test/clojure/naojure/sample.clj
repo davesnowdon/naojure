@@ -45,17 +45,17 @@
  (hands :open))
 
 ;; complete movement in 0.1 second
-(nao/do robot :duration 0.1
+(nao/donao robot :duration 0.1
           (arms :out)
           (hands :left-open)
           (hands :right-close))
 
-(nao/do robot :channel chan
+(nao/donao robot :channel chan
  (arms :out )
  (hands :open)
  (leds :white))
 
-nao/do returns a channel which a message is sent on when the action completes
+nao/donao returns a channel which a message is sent on when the action completes
 
 variants
 - actions
