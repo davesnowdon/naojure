@@ -2,7 +2,7 @@
   (:require [naojure.core :as nao :refer []]))
 
 (require '[naojure.core :as nao
-           :refer [head arms elbows wrists hands legs knees feet]]
+           :refer [head arms elbows wrists hands legs knees feet say]]
          '[clojure.core.async :as async
            :refer [<! >! timeout chan alt! go]]
          '[clojure.pprint :refer [pprint]])
