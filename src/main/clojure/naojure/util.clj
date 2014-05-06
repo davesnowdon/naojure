@@ -1,5 +1,7 @@
 (ns naojure.util)
 
+(def not-nil? (complement nil?))
+
 (defn combine-fns
   [selector params & fns]
   {selector (->> fns
