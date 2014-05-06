@@ -3,6 +3,7 @@
              :refer [<! >! <!! timeout chan alts! alts!! put! go]]
             [naojure.util :refer :all]
             [naojure.motion-calc :refer :all]
+            [clojure.string :refer [join]]
             [clojure.pprint :refer [pprint]]))
 
 (def proxy-names {
@@ -99,6 +100,11 @@
   ([hostname port] (attach-session {:hostname hostname :port port}))
   ([hostname port proxies]
      (add-proxies (attach-session {:hostname hostname :port port}) proxies)))
+
+(defn robot?
+  "Returns true if argument represents a robot"
+  [robot]
+  (not-nil? (:hostname robot)))
 
 (defn get-proxy
   "Gets a proxy from a robot, constructing it if necessary"
@@ -556,10 +562,18 @@
    (.get)))
 
 ; text to speech
-(defn say
-  "Say something"
-  [robot text]
+(defmulti say (fn [tor & args]
+                (cond
+                 (robot? tor) :default
+                 :else :donao)))
+
+(defmethod say :default
+  [robot text & args]
   (call-service robot :tts "say" [text]))
+
+(defmethod say :donao
+  [text & args]
+  {:speech text})
 
 (defn get-language
   "Get the currently defined text-to-speech language"
@@ -735,7 +749,7 @@
        } action) angle1 angle2)))
 
 (defn- filter-actions
-  "Return only the values of joint actions"
+  "Return only the values of actions matching the selector"
   [selector actions]
   (->> actions
        (map selector)
@@ -785,10 +799,18 @@
                  (Float. execution-time-seconds)]))
 
 (defn- do-stiffness
-  "Takes a map of stiffness changes and a duration and builds tasks for"
+  "Takes a map of stiffness changes and a duration and builds tasks"
   [robot duration stiffness-changes]
   (if (seq stiffness-changes)
-    (map (fn [[c s]] (stiffness-task c s duration)) stiffness-changes)))
+    (map (fn [[c s]] (stiffness-task robot c s duration)) stiffness-changes)))
+
+(defn- do-speech
+  "Takes a map of speech actions and a duration and builds a single task since multiple words can't be said simultaneously"
+  [robot duration speech-changes]
+  (let [fulltext (if (string? speech-changes)
+                   speech-changes
+                   (join " " speech-changes))]
+    (list (call-service robot :tts "say" [fulltext]))))
 
 (defn-  parse-args
   "Parse an argument list and separate options from other params"
@@ -832,6 +854,7 @@
         is-blocking (and (nil? done-chan) (nil? callback))
         joint-changes (filter-actions :joints actions)
         stiffness-changes (filter-actions :stiffness actions)
+        speech-changes (filter-actions :speech actions)
         go-result-chan
         (go
          ;; wait to be triggered
@@ -846,7 +869,8 @@
          (let [stiffness-tasks (do-stiffness robot duration
                                              stiffness-changes)
                joint-tasks (do-joints robot duration joint-changes)
-               all-tasks (concat stiffness-tasks joint-tasks)]
+               speech-tasks (do-speech robot duration speech-changes)
+               all-tasks (concat stiffness-tasks joint-tasks speech-tasks)]
            (cond
             ;; send true on done-chan when all tasks done
             (not (nil? done-chan))
