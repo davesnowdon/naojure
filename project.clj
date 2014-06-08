@@ -10,4 +10,4 @@
   :test-paths ["test" "src/test/clojure"]
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/core.async "0.1.242.0-44b1e3-alpha"]
-                 [com.aldebaran/qimessaging "1.22.2"]])
+                 [com.aldebaran/qimessaging "2.0.1"]])
