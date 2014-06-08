@@ -134,7 +134,7 @@
 
 ;; function to use as placeholder in callback wrapper when no
 ;; action is required
-(defn- do-nothing [])
+(defn- do-nothing [values])
 
 (defn future-callback-on-complete
   [future complete-fn]
