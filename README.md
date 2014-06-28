@@ -35,6 +35,29 @@ Once you have a robot you can then do actions such as:
 (relax robot)
 </pre>
 
+You can use the donao function to specify a combination of joint &
+stiffness commands. The structure is similar to FluentNAO but with
+clojure syntax.
+
+<pre>
+;; complete movement in 0.1 second
+(nao/donao robot :duration 0.1
+          (arms :out)
+          (hands :left-open)
+          (hands :right-close))
+</pre>
+
+donao returns a channel which a message is sent on when the action
+completes
+
+You can pass other options to donao
+* :duration - adjust speed of motion tasks to complete in this number of milliseconds
+* :callback -  call this function when all actions done
+* :wait-channel - channel to wait on before starting action
+* :wait-timeout - timeout in milliseconds, after the timeout has expired will run action even if nothing received on the wait channel.
+* :done-channel - send true on this channel when all actions are complete
+* :done-timeout - wait at most this number of milliseconds before returning
+
 
 ## Packaging the Aldebaran library
 You need to install the Aldebaran jar file for your platform on locally.  You can use the
