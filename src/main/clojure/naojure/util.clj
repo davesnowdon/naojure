@@ -15,3 +15,11 @@
 (defn combine-stiffness-fns
   [& fns]
   (apply combine-fns :stiffness [] fns))
+
+(defn map-to-list
+  [m]
+  (map (fn [k] [k (m k)]) (keys m)))
+
+(defn map-to-java-list
+  [m]
+  (map (fn [k] (java.util.ArrayList. (list k (m k)))) (keys m)))

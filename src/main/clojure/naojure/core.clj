@@ -388,12 +388,27 @@
     (call-service robot :memory "getData" [key])
     (.get)))
 
+(defn set-memory-value
+   "Get named value from memory"
+   [robot key value]
+   (->
+    (call-service robot :memory "insertData" [key value])
+    (.get)))
+
 (defn get-memory-values
    "Get values for list of named keys"
    [robot keys]
    (->
     (call-service robot :memory "getData"
                   [(to-array keys)])
+    (.get)))
+
+(defn set-memory-values
+   "Takes a map and sets the values of the specified ALMemory keys"
+   [robot keyvalues]
+   (->
+    (call-service robot :memory "insertListData"
+                  [(java.util.ArrayList. (map-to-java-list keyvalues))])
     (.get)))
 
 ; posture
